@@ -42,7 +42,7 @@ export default class NewClass extends cc.Component {
                 room_id = firebase.database().ref("Room/").push().getKey();
                 firebase.database().ref("Room/" + room_id + "/").set({
                     type: "1v1",
-                    map: "RUwar",
+                    mapname: "RUwar",
                     state: "wait"
                 });
                 let res = {}
@@ -56,9 +56,24 @@ export default class NewClass extends cc.Component {
                 firebase.database().ref("Room/" + room_id + "/player/").update(res).then(() => {
                     players = room[room_id].player;
                     if (Object.keys(players).length == 1) {
-                        firebase.database().ref("Room/" + room_id + "/state/").set("battle");
+                        let tmp = [];
+                        console.log(players)
+                        console.log(Object.keys(players))
+                        for (let i in Object.keys(players)) {
+                            tmp.push(Object.keys(players)[i]);
+                        }
+                        tmp.push(Object.keys(res)[0]);
+                        for (let i = 0; i < 2; ++ i) {
+                            firebase.database().ref("Room/" + room_id + "/authority/" + tmp[i]).set(i);
+                        }
                         firebase.database().ref("Room/" + room_id + "/server/").set(user.email);
+                        firebase.database().ref("Room/" + room_id + "/turn/").set(0);
+                        firebase.database().ref("Map/" + "RUwar/").once("value", data => {
+                            firebase.database().ref("Room/" + room_id + "/map/").set(data.val());
+                        })
                     }
+                }).then(() => {
+                    firebase.database().ref("Room/" + room_id + "/state/").set("battle");
                 });
             }
 
