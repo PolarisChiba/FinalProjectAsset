@@ -8,7 +8,7 @@
 const {ccclass, property} = cc._decorator;
 
 const GridSize = 140;
-const TurnInterval = 2;
+const TurnInterval = 3;
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -130,9 +130,6 @@ export default class NewClass extends cc.Component {
     @property(cc.Toggle)
     RiverToggle: cc.Toggle = null;
 
-    @property(cc.Toggle)
-    MountainToggle: cc.Toggle = null;
-
     @property(cc.Button)
     AirportMoveBtn: cc.Button = null;
 
@@ -151,6 +148,8 @@ export default class NewClass extends cc.Component {
     @property(cc.Label)
     FortPrice: cc.Label = null;
 
+    @property(cc.Label)
+    GameTurn: cc.Label = null;
 
     // LIFE-CYCLE CALLBACKS:
 
@@ -168,34 +167,211 @@ export default class NewClass extends cc.Component {
                 this.InitGridArrays();
                 this.InitInfoBar();
                 this.ShowName();
+                this.ServerDesuWa();
+                this.ClientDesuWa();
+                this.ShowGridInformation(0, 0);
             });
+        }).then(() => {
+            cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.RegisterKeyBoardEvent, this);
+            cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.UnregisterKeyBoardEvent, this);
+            this.NameToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowName, this);
+            this.ArmyToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowArmy, this);
+            this.LevelToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowLevel, this);
+            this.AirportToggle.node.on("toggle", this.AirportToggleCheck, this);
+            this.MissileToggle.node.on("toggle", this.MissileToggleCheck, this);
+            this.TrenchToggle.node.on("toggle", this.TrenchToggleCheck, this);
+            this.FortToggle.node.on("toggle", this.FortToggleCheck, this);
         })
-        
-        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.RegisterKeyBoardEvent, this);
-        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.UnregisterKeyBoardEvent, this);
-        this.NameToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowName, this);
-        this.ArmyToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowArmy, this);
-        this.LevelToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowLevel, this);
-
-        this.ServerDesuWa();
     }
 
     // update (dt) {}
 
+    ClientDesuWa() {
+        firebase.database().ref("Room/" + this.room_id + "/map").on("value", (data) => {
+            this.GameInfo.map = data.val();
+            if (this.ShowState == "Name") this.ShowName();
+            else if (this.ShowState == "Army") this.ShowArmy();
+            else if (this.ShowState == "Level") this.ShowLevel();
+            this.ShowGridInformation(this.GridX, this.GridY);
+        });
+        firebase.database().ref("Room/" + this.room_id + "/turn").on("value", (data) => {
+            this.GameTurn.string = "Turn: " + data.val();
+        });
+    }
+
     ServerDesuWa() {
-        /*
         if (this.GameInfo.server == this.user.email) {
             this.ServerMap = this.GameInfo.map;
             this.ServerTurn = 0;
+            this.schedule(this.ServerIntervalWork, TurnInterval);
+            firebase.database().ref("Room/" + this.room_id + "/action/advance/").on("child_added", (data) => {
+                let res = data.val();
+                if (this.ServerMap[res.I][res.J].authority == this.ServerMap[res.destI][res.destJ].authority) {
+                    this.ServerMap[res.destI][res.destJ].soldier += res.soldier;
+                    this.ServerMap[res.destI][res.destJ].equip += res.equip;
+                    this.ServerMap[res.destI][res.destJ].food += res.food;
+                    this.ServerMap[res.I][res.J].soldier -= res.soldier;
+                    this.ServerMap[res.I][res.J].equip -= res.equip;
+                    this.ServerMap[res.I][res.J].food -= res.food;
+                }
+            });
+            firebase.database().ref("Room/" + this.room_id + "/action/construct").on("child_added", (data) => {
+                let res = data.val();
+                if (res.construction == "Airport") {
+                    this.ServerMap[res.I][res.J].airport = true;
+                    this.ServerMap[res.I][res.J].food -= 10000;
+                } else if (res.construction == "Missile") {
+                    this.ServerMap[res.I][res.J].missile = true;
+                    this.ServerMap[res.I][res.J].food -= 10000;
+                } else if (res.construction == "Trench") {
+                    this.ServerMap[res.I][res.J].trench = true;
+                    this.ServerMap[res.I][res.J].food -= 10000;
+                } else if (res.construction == "Fort") {
+                    this.ServerMap[res.I][res.J].fort = true;
+                    this.ServerMap[res.I][res.J].food -= 20000;
+                }
+            });
         }
-        */
-        
+    }
+    ServerIntervalWork() {
+        this.ServerTurn += 1;
+        for (let i = 0; i < this.ServerMap.height; i ++ ) {
+            for (let j = 0; j < this.ServerMap.width; j ++ ) {
+                // this.ServerMap[i][j].food += 1000 * this.ServerMap[i][j].farm - this.ServerMap[i][j].soldier / 1000;
+                // this.ServerMap[i][j].food = Math.max(0, this.ServerMap[i][j].food);
+                // this.ServerMap[i][j].soldier += 1000 * this.ServerMap[i][j].city;
+                // this.ServerMap[i][j].equip += 20 * this.ServerMap[i][j].industry;
+            }
+        }
+        firebase.database().ref("Room/" + this.room_id + "/turn").set(this.ServerTurn);
+        firebase.database().ref("Room/" + this.room_id + "/map").set(this.ServerMap);
     }
 
     RegisterKeyBoardEvent(event: any) {
         if (event.keyCode == 16) {
             this.node.on(cc.Node.EventType.MOUSE_DOWN, this.GetPos, this);
             this.node.on(cc.Node.EventType.MOUSE_UP, this.RemoveMove, this);
+
+        } else if (event.keyCode == 65) { // A
+            if (this.GridX != null && this.GridY - 1 >= 0 && this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                if (this.GameInfo.map[this.GridX][this.GridY - 1].authority == this.GameInfo.authority[this.user.uid]) {
+                    let SoldierMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].soldier * this.SoldierSlider.progress);
+                    let EquipMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].equip * this.EquipSlider.progress);
+                    let FoodMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].food * this.FoodSlider.progress);
+
+                    this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
+
+                    if (this.ShowState == "Army") {
+                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+                    }
+                    
+                    this.ShowGridInformation(this.GridX, this.GridY);
+
+                    firebase.database().ref("Room/" + this.room_id + "/action/advance/").push({
+                        I: this.GridX,
+                        J: this.GridY,
+                        soldier: SoldierMoved,
+                        equip: EquipMoved,
+                        food: FoodMoved,
+                        destI: this.GridX,
+                        destJ: this.GridY - 1
+                    })
+                }
+            }
+        } else if (event.keyCode == 83) { // S
+            if (this.GridX != null && this.GridX + 1 >= 0 && this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                if (this.GameInfo.map[this.GridX + 1][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                    let SoldierMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].soldier * this.SoldierSlider.progress);
+                    let EquipMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].equip * this.EquipSlider.progress);
+                    let FoodMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].food * this.FoodSlider.progress);
+
+                    this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
+
+                    if (this.ShowState == "Army") {
+                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+                    }
+                    
+                    this.ShowGridInformation(this.GridX, this.GridY);
+
+                    firebase.database().ref("Room/" + this.room_id + "/action/advance/").push({
+                        I: this.GridX,
+                        J: this.GridY,
+                        soldier: SoldierMoved,
+                        equip: EquipMoved,
+                        food: FoodMoved,
+                        destI: this.GridX + 1,
+                        destJ: this.GridY
+                    })
+                }
+            }
+        } else if (event.keyCode == 68) { // D
+            if (this.GridX != null && this.GridY + 1 >= 0 && this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                if (this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                    let SoldierMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].soldier * this.SoldierSlider.progress);
+                    let EquipMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].equip * this.EquipSlider.progress);
+                    let FoodMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].food * this.FoodSlider.progress);
+
+                    this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
+
+                    if (this.ShowState == "Army") {
+                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+                    }
+                    
+                    this.ShowGridInformation(this.GridX, this.GridY);
+
+                    firebase.database().ref("Room/" + this.room_id + "/action/advance/").push({
+                        I: this.GridX,
+                        J: this.GridY,
+                        soldier: SoldierMoved,
+                        equip: EquipMoved,
+                        food: FoodMoved,
+                        destI: this.GridX,
+                        destJ: this.GridY + 1
+                    })
+                }
+            }
+        } else if (event.keyCode == 87) { // W
+            if (this.GridX != null && this.GridX - 1 >= 0 && this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                if (this.GameInfo.map[this.GridX - 1][this.GridY].authority == this.GameInfo.authority[this.user.uid]) {
+                    let SoldierMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].soldier * this.SoldierSlider.progress);
+                    let EquipMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].equip * this.EquipSlider.progress);
+                    let FoodMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].food * this.FoodSlider.progress);
+
+                    this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
+                    this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
+
+                    if (this.ShowState == "Army") {
+                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+                    }
+                    
+                    this.ShowGridInformation(this.GridX, this.GridY);
+
+                    firebase.database().ref("Room/" + this.room_id + "/action/advance/").push({
+                        I: this.GridX,
+                        J: this.GridY,
+                        soldier: SoldierMoved,
+                        equip: EquipMoved,
+                        food: FoodMoved,
+                        destI: this.GridX - 1,
+                        destJ: this.GridY
+                    })
+                }
+            }
         }
     }
 
@@ -208,6 +384,8 @@ export default class NewClass extends cc.Component {
     }
 
     AdjustSize() {
+        console.log(this.node)
+        console.log(this.GameInfo)
         this.node.width = this.GameInfo.map.width * GridSize;
         this.node.height = this.GameInfo.map.height * GridSize;
         this.Background.width = Math.max(1200, this.node.width);
@@ -233,7 +411,7 @@ export default class NewClass extends cc.Component {
                 this.MapGrid[i][j] = cc.instantiate(this.GridPrefab);
                 this.MapGrid[i][j].parent = this.node;
                 this.MapGrid[i][j].setPosition(j * GridSize + 70, -i * GridSize - 70);
-                this.MapGrid[i][j].on(cc.Node.EventType.MOUSE_DOWN, this.ShowGridInformation, {TmpNode: this, i: i, j: j});
+                this.MapGrid[i][j].on(cc.Node.EventType.MOUSE_DOWN, this.ShowGridInformationPrevious, {TmpNode: this, i: i, j: j});
 
                 this.NumberTop[i][j] = cc.find("Text/NumberTop", this.MapGrid[i][j]).getComponent(cc.Label);
                 this.NumberCenter[i][j] = cc.find("Text/NumberCenter", this.MapGrid[i][j]).getComponent(cc.Label)
@@ -267,126 +445,186 @@ export default class NewClass extends cc.Component {
         // 只要不是在起始位置，點擊時，判定位置會有問題
     }
 
+    AirportToggleCheck() {
+        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        console.log(this.GameInfo.map[this.GridX][this.GridY].food)
+        this.GameInfo.map[this.GridX][this.GridY].airport = true;
+        this.ShowGridInformation(this.GridX, this.GridY);
+        firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
+            I: this.GridX,
+            J: this.GridY,
+            construction: "Airport"
+        });
+        if (this.ShowState == "Army") {
+            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+        }
+    }
+    MissileToggleCheck() {
+        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        this.GameInfo.map[this.GridX][this.GridY].missile = true;
+        this.ShowGridInformation(this.GridX, this.GridY);
+        firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
+            I: this.GridX,
+            J: this.GridY,
+            construction: "Missile"
+        });
+        if (this.ShowState == "Army") {
+            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+        }
+    }
+    TrenchToggleCheck() {
+        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        this.GameInfo.map[this.GridX][this.GridY].trench = true;
+        this.ShowGridInformation(this.GridX, this.GridY);
+        firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
+            I: this.GridX,
+            J: this.GridY,
+            construction: "Trench"
+        });
+        if (this.ShowState == "Army") {
+            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+        }
+    }
+    FortToggleCheck() {
+        this.GameInfo.map[this.GridX][this.GridY].food -= 20000;
+        this.GameInfo.map[this.GridX][this.GridY].fort = true;
+        this.ShowGridInformation(this.GridX, this.GridY);
+        firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
+            I: this.GridX,
+            J: this.GridY,
+            construction: "Fort"
+        });
+        if (this.ShowState == "Army") {
+            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
+            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
+            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
+        }
+    }
+
     @property
     GridX: number = null;
     @property
     GridY: number = null;
-    ShowGridInformation(event: any) {
-        console.log(event)
+    ShowGridInformationPrevious(event: any) {
         if (event.getLocationX() <= 1200) {
-
-            let ok = (this["TmpNode"].GameInfo.map[this["TmpNode"].GridX][this["TmpNode"].GridY].authority == this["TmpNode"].GameInfo.authority[this["TmpNode"].user.uid]);
-            for (let k = 0; k < 4; k ++ ) {
-                let tx = this["TmpNode"].GridX + this["TmpNode"].dx[k], ty = this["TmpNode"].GridY + this["TmpNode"].dy[k];
-                if (0 <= tx && tx < this["TmpNode"].GameInfo.map.height && 0 <= ty && ty < this["TmpNode"].GameInfo.map.width) {
-                    ok ||= (this["TmpNode"].GameInfo.map[tx][ty].authority == this["TmpNode"].GameInfo.authority[this["TmpNode"].user.uid]);
-                }
-            }
-            if (ok)
-                this["TmpNode"].Fog[this["TmpNode"].GridX][this["TmpNode"].GridY].opacity = 0;
-            else
-                this["TmpNode"].Fog[this["TmpNode"].GridX][this["TmpNode"].GridY].opacity = 255;
-
-            if (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].authority == this["TmpNode"].GameInfo.authority[this["TmpNode"].user.uid]) {
-                this["TmpNode"].Fog[this["i"]][this["j"]].opacity = 150;
-
-                this["TmpNode"].SoldierNumber.string = "Soldier: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].soldier + "/" + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].soldier;
-                this["TmpNode"].EquipNumber.string = "Equip: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].equip + "/" + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].equip;
-                this["TmpNode"].FoodNumber.string = "Food: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food + "/" + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food;
-                
-                this["TmpNode"].CityLevelText.string = "City: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].city;
-                this["TmpNode"].IndustryLevelText.string = "Industry: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].industry;
-                this["TmpNode"].FarmLevelText.string = "Farm: " + this["TmpNode"].GameInfo.map[this["i"]][this["j"]].farm;
-
-                this["TmpNode"].CityUpgradeText.string = "+ " + String((Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].city) + 1) * 8000);
-                this["TmpNode"].IndustryUpgradeText.string = "+ " + String((Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].industry) + 1) * 5000);
-                this["TmpNode"].FarmUpgradeText.string = "+ " + String((Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].farm) + 1) * 5000);
-
-                this["TmpNode"].CityUpgradeBtn.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].city == "5" || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < (Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].city) + 1) * 8000);
-                this["TmpNode"].IndustryUpgradeBtn.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].industry == "5" || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < (Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].industry) + 1) * 5000);
-                this["TmpNode"].FarmUpgradeBtn.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].farm == "5" || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < (Number(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].farm) + 1) * 5000);
-
-                this["TmpNode"].AirportToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].airport == true);
-                this["TmpNode"].MissileToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].missile == true);
-                this["TmpNode"].TrenchToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].trench == true);
-                this["TmpNode"].FortToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].fort == true);
-                this["TmpNode"].RiverToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].river == true);
-                this["TmpNode"].MountainToggle.isChecked = (this["TmpNode"].GameInfo.map[this["i"]][this["j"]].mountain == true);
-
-                this["TmpNode"].AirportMoveBtn.node.active = this["TmpNode"].AirportToggle.isChecked;
-                this["TmpNode"].MissileLaunchBtn.node.active = this["TmpNode"].MissileToggle.isChecked;
-                this["TmpNode"].AirportPrice.node.active = !this["TmpNode"].AirportToggle.isChecked;
-                this["TmpNode"].MissilePrice.node.active = !this["TmpNode"].MissileToggle.isChecked;
-                this["TmpNode"].TrenchPrice.node.active = !this["TmpNode"].TrenchToggle.isChecked;
-                this["TmpNode"].FortPrice.node.active = !this["TmpNode"].FortToggle.isChecked;
-
-                this["TmpNode"].AirportToggle.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].airport == true || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < 10000);
-                this["TmpNode"].MissileToggle.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].missile == true || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < 10000);
-                this["TmpNode"].TrenchToggle.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].trench == true || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < 10000);
-                this["TmpNode"].FortToggle.interactable = !(this["TmpNode"].GameInfo.map[this["i"]][this["j"]].fort == true || this["TmpNode"].GameInfo.map[this["i"]][this["j"]].food < 20000);
-                
-            } else {
-                this["TmpNode"].SoldierNumber.string = "Soldier: 0/0";
-                this["TmpNode"].EquipNumber.string = "Equip: 0/0";
-                this["TmpNode"].FoodNumber.string = "Food: 0/0";
-                
-                this["TmpNode"].CityLevelText.string = "City: ";
-                this["TmpNode"].IndustryLevelText.string = "Industry: ";
-                this["TmpNode"].FarmLevelText.string = "Farm: ";
-
-                this["TmpNode"].CityUpgradeText.string = "+ ";
-                this["TmpNode"].IndustryUpgradeText.string = "+ ";
-                this["TmpNode"].FarmUpgradeText.string = "+ ";
-
-                this["TmpNode"].CityUpgradeBtn.interactable = false;
-                this["TmpNode"].IndustryUpgradeBtn.interactable = false;
-                this["TmpNode"].FarmUpgradeBtn.interactable = false;
-
-                this["TmpNode"].AirportToggle.isChecked = false;
-                this["TmpNode"].MissileToggle.isChecked = false;
-                this["TmpNode"].TrenchToggle.isChecked = false;
-                this["TmpNode"].FortToggle.isChecked = false;
-                this["TmpNode"].RiverToggle.isChecked = false;
-                this["TmpNode"].MountainToggle.isChecked = false;
-
-                this["TmpNode"].AirportMoveBtn.node.active = false;
-                this["TmpNode"].MissileLaunchBtn.node.active = false;
-                this["TmpNode"].AirportPrice.node.active = false;
-                this["TmpNode"].MissilePrice.node.active = false;
-                this["TmpNode"].TrenchPrice.node.active = false;
-                this["TmpNode"].FortPrice.node.active = false;
-
-                this["TmpNode"].AirportToggle.interactable = false;
-                this["TmpNode"].MissileToggle.interactable = false;
-                this["TmpNode"].TrenchToggle.interactable = false;
-                this["TmpNode"].FortToggle.interactable = false;
-            }
-
-            this["TmpNode"].GridX = this["i"];
-            this["TmpNode"].GridY = this["j"];
-            this["TmpNode"].SoldierSlider.progress = 1;
-            this["TmpNode"].EquipSlider.progress = 1;
-            this["TmpNode"].FoodSlider.progress = 1;
+            this["TmpNode"].ShowGridInformation(this["i"], this["j"]);
         }
     }
+    ShowGridInformation(i: number, j: number) {
+        let ok = (this.GameInfo.map[this.GridX][this.GridY].authority == this.GameInfo.authority[this.user.uid]);
+        for (let k = 0; k < 4; k ++ ) {
+            let tx = this.GridX + this.dx[k], ty = this.GridY + this.dy[k];
+            if (0 <= tx && tx < this.GameInfo.map.height && 0 <= ty && ty < this.GameInfo.map.width) {
+                ok ||= (this.GameInfo.map[tx][ty].authority == this.GameInfo.authority[this.user.uid]);
+            }
+        }
+        if (ok)
+            this.Fog[this.GridX][this.GridY].opacity = 0;
+        else
+            this.Fog[this.GridX][this.GridY].opacity = 255;
+
+        if (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
+            this.Fog[i][j].opacity = 150;
+
+            this.SoldierNumber.string = "Soldier: " + this.GameInfo.map[i][j].soldier + "/" + this.GameInfo.map[i][j].soldier;
+            this.EquipNumber.string = "Equip: " + this.GameInfo.map[i][j].equip + "/" + this.GameInfo.map[i][j].equip;
+            this.FoodNumber.string = "Food: " + this.GameInfo.map[i][j].food + "/" + this.GameInfo.map[i][j].food;
+            
+            this.CityLevelText.string = "City: " + this.GameInfo.map[i][j].city;
+            this.IndustryLevelText.string = "Industry: " + this.GameInfo.map[i][j].industry;
+            this.FarmLevelText.string = "Farm: " + this.GameInfo.map[i][j].farm;
+
+            this.CityUpgradeText.string = "+ " + (this.GameInfo.map[i][j].city + 1) * 8000;
+            this.IndustryUpgradeText.string = "+ " + (this.GameInfo.map[i][j].industry + 1) * 5000;
+            this.FarmUpgradeText.string = "+ " + (this.GameInfo.map[i][j].farm + 1) * 5000;
+
+            this.CityUpgradeBtn.interactable = !(this.GameInfo.map[i][j].city == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].city + 1) * 8000);
+            this.IndustryUpgradeBtn.interactable = !(this.GameInfo.map[i][j].industry == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].industry + 1) * 5000);
+            this.FarmUpgradeBtn.interactable = !(this.GameInfo.map[i][j].farm == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].farm + 1) * 5000);
+
+            this.AirportToggle.isChecked = (this.GameInfo.map[i][j].airport == true);
+            this.MissileToggle.isChecked = (this.GameInfo.map[i][j].missile == true);
+            this.TrenchToggle.isChecked = (this.GameInfo.map[i][j].trench == true);
+            this.FortToggle.isChecked = (this.GameInfo.map[i][j].fort == true);
+            this.RiverToggle.isChecked = (this.GameInfo.map[i][j].river == true);
+
+            this.AirportMoveBtn.node.active = this.AirportToggle.isChecked;
+            this.MissileLaunchBtn.node.active = this.MissileToggle.isChecked;
+            this.AirportPrice.node.active = !this.AirportToggle.isChecked;
+            this.MissilePrice.node.active = !this.MissileToggle.isChecked;
+            this.TrenchPrice.node.active = !this.TrenchToggle.isChecked;
+            this.FortPrice.node.active = !this.FortToggle.isChecked;
+
+            this.AirportToggle.interactable = !(this.GameInfo.map[i][j].airport == true || this.GameInfo.map[i][j].food < 10000);
+            this.MissileToggle.interactable = !(this.GameInfo.map[i][j].missile == true || this.GameInfo.map[i][j].food < 10000);
+            this.TrenchToggle.interactable = !(this.GameInfo.map[i][j].trench == true || this.GameInfo.map[i][j].food < 10000);
+            this.FortToggle.interactable = !(this.GameInfo.map[i][j].fort == true || this.GameInfo.map[i][j].food < 20000);
+            
+        } else {
+            this.SoldierNumber.string = "Soldier: 0/0";
+            this.EquipNumber.string = "Equip: 0/0";
+            this.FoodNumber.string = "Food: 0/0";
+            
+            this.CityLevelText.string = "City: ";
+            this.IndustryLevelText.string = "Industry: ";
+            this.FarmLevelText.string = "Farm: ";
+
+            this.CityUpgradeText.string = "+ ";
+            this.IndustryUpgradeText.string = "+ ";
+            this.FarmUpgradeText.string = "+ ";
+
+            this.CityUpgradeBtn.interactable = false;
+            this.IndustryUpgradeBtn.interactable = false;
+            this.FarmUpgradeBtn.interactable = false;
+
+            this.AirportToggle.isChecked = false;
+            this.MissileToggle.isChecked = false;
+            this.TrenchToggle.isChecked = false;
+            this.FortToggle.isChecked = false;
+            this.RiverToggle.isChecked = false;
+
+            this.AirportMoveBtn.node.active = false;
+            this.MissileLaunchBtn.node.active = false;
+            this.AirportPrice.node.active = false;
+            this.MissilePrice.node.active = false;
+            this.TrenchPrice.node.active = false;
+            this.FortPrice.node.active = false;
+
+            this.AirportToggle.interactable = false;
+            this.MissileToggle.interactable = false;
+            this.TrenchToggle.interactable = false;
+            this.FortToggle.interactable = false;
+        }
+
+        this.GridX = i;
+        this.GridY = j;
+        this.SoldierSlider.progress = 1;
+        this.EquipSlider.progress = 1;
+        this.FoodSlider.progress = 1;
+    }
     SoliderNumberSlide() {
-        let num = Number(this.GameInfo.map[this.GridX][this.GridY].soldier);
-        num = Math.round(this.SoldierSlider.progress * num);
-        this.SoldierNumber.string = "Soldier: " + String(num) + "/" + this.GameInfo.map[this.GridX][this.GridY].soldier;
+        let num = Math.round(this.SoldierSlider.progress * this.GameInfo.map[this.GridX][this.GridY].soldier);
+        this.SoldierNumber.string = "Soldier: " + num + "/" + this.GameInfo.map[this.GridX][this.GridY].soldier;
     }
     EquipNumberSlide() {
-        let num = Number(this.GameInfo.map[this.GridX][this.GridY].equip);
-        num = Math.round(this.EquipSlider.progress * num);
-        this.EquipNumber.string = "Equip: " + String(num) + "/" + this.GameInfo.map[this.GridX][this.GridY].equip;
+        let num = Math.round(this.EquipSlider.progress * this.GameInfo.map[this.GridX][this.GridY].equip);
+        this.EquipNumber.string = "Equip: " + num + "/" + this.GameInfo.map[this.GridX][this.GridY].equip;
     }
     FoodNumberSlide() {
-        let num = Number(this.GameInfo.map[this.GridX][this.GridY].food);
-        num = Math.round(this.FoodSlider.progress * num);
-        this.FoodNumber.string = "Food: " + String(num) + "/" + this.GameInfo.map[this.GridX][this.GridY].food;
+        let num = Math.round(this.FoodSlider.progress * this.GameInfo.map[this.GridX][this.GridY].food);
+        this.FoodNumber.string = "Food: " + num + "/" + this.GameInfo.map[this.GridX][this.GridY].food;
     }
     
-
+    @property
+    ShowState: String = "Name";
     ShowName() {
+        this.ShowState = "Name";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
                 this.NumberTop[i][j].string = "";
@@ -397,21 +635,23 @@ export default class NewClass extends cc.Component {
         this.ShowVisible();
     }
     ShowArmy() {
+        this.ShowState = "Army";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].soldier == "0" ? "" : "S:" + this.GameInfo.map[i][j].soldier);
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].equip == "0" ? "" : "E:" + this.GameInfo.map[i][j].equip);
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].food == "0" ? "" : "F:" + this.GameInfo.map[i][j].food);
+                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].soldier == 0 ? "" : "S:" + this.GameInfo.map[i][j].soldier);
+                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].equip == 0 ? "" : "E:" + this.GameInfo.map[i][j].equip);
+                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].food == 0 ? "" : "F:" + this.GameInfo.map[i][j].food);
             }
         }
         this.ShowVisible();
     }
     ShowLevel() {
+        this.ShowState = "Level";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].city == "0" ? "" : "C:" + this.GameInfo.map[i][j].city);
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].industry == "0" ? "" : "I:" + this.GameInfo.map[i][j].industry);
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].farm == "0" ? "" : "F:" + this.GameInfo.map[i][j].farm);
+                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].city == 0 ? "" : "C:" + this.GameInfo.map[i][j].city);
+                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].industry == 0 ? "" : "I:" + this.GameInfo.map[i][j].industry);
+                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].farm == 0 ? "" : "F:" + this.GameInfo.map[i][j].farm);
             }
         }
         this.ShowVisible();
@@ -438,8 +678,8 @@ export default class NewClass extends cc.Component {
                 if (i == this.GridX && j == this.GridY && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid])
                     this.Fog[i][j].opacity = 150;
                 
-                if (this.GameInfo.map[i][j].authority == "0") this.Identity[i][j].color = new cc.Color(255, 0, 0);
-                else if (this.GameInfo.map[i][j].authority == "1") this.Identity[i][j].color = new cc.Color(0, 255, 0);
+                if (this.GameInfo.map[i][j].authority == 0) this.Identity[i][j].color = new cc.Color(255, 0, 0);
+                else if (this.GameInfo.map[i][j].authority == 1) this.Identity[i][j].color = new cc.Color(0, 255, 0);
             }
         }
     }
@@ -465,7 +705,6 @@ export default class NewClass extends cc.Component {
             this.Camera.y = 0;
         this.InforBar.x = this.Camera.x + 600;
         this.InforBar.y = this.Camera.y + 0;
-        console.log(this.InforBar.x)
     }
     RemoveMove() {
         this.node.off(cc.Node.EventType.MOUSE_MOVE, this.MoveView, this);

@@ -47,7 +47,7 @@ export default class NewClass extends cc.Component {
     Trench: cc.Toggle = null;
 
     @property(cc.Toggle)
-    River: cc.Toggle = null;
+    Nature: cc.Toggle = null;
 
     @property
     r: number = null;
@@ -79,17 +79,17 @@ export default class NewClass extends cc.Component {
     Submit() {
         firebase.database().ref("Map/" + this.MapName.string + "/" + this.r.toString() + "/" + this.c.toString() + "/").set({
             name: this.Name.string,
-            authority: this.Authority.string,
-            soldier: this.Soldier.string,
-            equip: this.Equip.string,
-            food: this.Food.string,
-            city: this.CityLevel.string,
-            industry: this.IndustryLevel.string,
-            farm: this.FarmLevel.string,
+            authority: Number(this.Authority.string),
+            soldier: Number(this.Soldier.string),
+            equip: Number(this.Equip.string),
+            food: Number(this.Food.string),
+            city: Number(this.CityLevel.string),
+            industry: Number(this.IndustryLevel.string),
+            farm: Number(this.FarmLevel.string),
             airport: this.Airport.isChecked,
             missile: this.Missile.isChecked,
             trench: this.Trench.isChecked,
-            river: this.River.isChecked
+            nature: this.Nature.isChecked
         });
 
         if (this.r == Number(this.MapHeight.string) - 1 && this.c == Number(this.MapWidth.string) - 1) {
@@ -113,6 +113,6 @@ export default class NewClass extends cc.Component {
         this.Airport.isChecked = false;
         this.Missile.isChecked = false;
         this.Trench.isChecked = false;
-        this.River.isChecked = false;
+        this.Nature.isChecked = false;
     }
 }

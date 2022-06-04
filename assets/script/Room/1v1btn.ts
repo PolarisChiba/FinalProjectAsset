@@ -42,7 +42,7 @@ export default class NewClass extends cc.Component {
                 room_id = firebase.database().ref("Room/").push().getKey();
                 firebase.database().ref("Room/" + room_id + "/").set({
                     type: "1v1",
-                    mapname: "RUwar",
+                    mapname: "Rwar",
                     state: "wait"
                 });
                 let res = {}
@@ -57,8 +57,6 @@ export default class NewClass extends cc.Component {
                     players = room[room_id].player;
                     if (Object.keys(players).length == 1) {
                         let tmp = [];
-                        console.log(players)
-                        console.log(Object.keys(players))
                         for (let i in Object.keys(players)) {
                             tmp.push(Object.keys(players)[i]);
                         }
@@ -68,7 +66,7 @@ export default class NewClass extends cc.Component {
                         }
                         firebase.database().ref("Room/" + room_id + "/server/").set(user.email);
                         firebase.database().ref("Room/" + room_id + "/turn/").set(0);
-                        firebase.database().ref("Map/" + "RUwar/").once("value", data => {
+                        firebase.database().ref("Map/" + "Rwar/").once("value", data => {
                             firebase.database().ref("Room/" + room_id + "/map/").set(data.val());
                         })
                     }

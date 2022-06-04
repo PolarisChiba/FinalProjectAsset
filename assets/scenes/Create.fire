@@ -8730,7 +8730,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "River",
+    "_name": "Nature",
     "_objFlags": 0,
     "_parent": {
       "__id__": 59
@@ -9013,7 +9013,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 93.34,
+      "width": 120.06,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -9065,8 +9065,8 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "River",
-    "_N$string": "River",
+    "_string": "Nature",
+    "_N$string": "Nature",
     "_fontSize": 40,
     "_lineHeight": 40,
     "_enableWrapText": true,
@@ -9577,7 +9577,7 @@
     "Trench": {
       "__id__": 189
     },
-    "River": {
+    "Nature": {
       "__id__": 197
     },
     "r": null,
