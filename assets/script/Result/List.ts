@@ -21,7 +21,7 @@ export default class NewClass extends cc.Component {
     // onLoad () {}
 
     start () {
-        this.node.getComponent(cc.Label).string = firebase.auth().currentUser.email;
+        
     }
 
     // update (dt) {}

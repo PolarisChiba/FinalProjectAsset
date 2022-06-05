@@ -16,6 +16,9 @@ export default class NewClass extends cc.Component {
     @property(cc.Label)
     password: cc.Label = null;
 
+    @property(cc.Label)
+    error: cc.Label = null;
+
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
@@ -30,6 +33,11 @@ export default class NewClass extends cc.Component {
         firebase.auth().signInWithEmailAndPassword(this.email.string, this.password.string)
         .then((e : any) => {
             cc.director.loadScene("Room");
+        })
+        .catch((e: any) => {
+            this.error.string = e.message;
+            this.email.string = "";
+            this.password.string = "";
         });
     }
 }

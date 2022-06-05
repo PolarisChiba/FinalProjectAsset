@@ -61,7 +61,7 @@ export default class NewClass extends cc.Component {
                             tmp.push(Object.keys(players)[i]);
                         }
                         tmp.push(Object.keys(res)[0]);
-                        for (let i = 0; i < 2; ++ i) {
+                        for (let i = 0; i < tmp.length; ++ i) {
                             firebase.database().ref("Room/" + room_id + "/authority/" + tmp[i]).set(i);
                         }
                         firebase.database().ref("Room/" + room_id + "/server/").set(user.email);

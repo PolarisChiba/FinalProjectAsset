@@ -163,20 +163,20 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 2046,
-      "height": 1438
+      "width": 1500,
+      "height": 843
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0,
-      "y": 1
+      "x": 0.5,
+      "y": 0.5
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -750,
-        350,
+        0,
+        0,
         0,
         0,
         0,
@@ -198,7 +198,7 @@
     "_is3DNode": false,
     "_groupIndex": 0,
     "groupIndex": 0,
-    "_id": "6fg6r4hupMtr2VubM6FwCi"
+    "_id": "a3lB9cNp5AfoZyO4Gw6IcO"
   },
   {
     "__type__": "cc.Sprite",
@@ -216,10 +216,10 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "843e50e2-6c24-431d-a66a-d5a7891d3e50"
+      "__uuid__": "ed80a8bf-4593-41e1-97f1-e47b0abf71d1"
     },
     "_type": 0,
-    "_sizeMode": 0,
+    "_sizeMode": 1,
     "_fillType": 0,
     "_fillCenter": {
       "__type__": "cc.Vec2",
@@ -230,7 +230,7 @@
     "_fillRange": 0,
     "_isTrimmedMode": true,
     "_atlas": null,
-    "_id": "aefXYb5k9HAKFdfLsrt0Js"
+    "_id": "f8q5an5GRGQrxT3fRoahVC"
   },
   {
     "__type__": "cc.Node",
@@ -478,9 +478,6 @@
     "LinePrefab": {
       "__uuid__": "508a827b-ef8d-49cd-8bef-cd0e58cbee5e"
     },
-    "Background": {
-      "__id__": 3
-    },
     "MapGrid": null,
     "NumberTop": null,
     "NumberCenter": null,
@@ -587,6 +584,7 @@
       "__id__": 13
     },
     "hasMissileLaunched": null,
+    "KillCounter": null,
     "isAirportMoving": false,
     "GridX": 0,
     "GridY": 0,

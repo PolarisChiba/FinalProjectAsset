@@ -8,7 +8,44 @@
 const {ccclass, property} = cc._decorator;
 
 const GridSize = 140;
-const TurnInterval = 15;
+const TurnInterval = 2;
+
+const CityUpgradeCost = 8000;
+const IndustryUpgradeCost = 5000;
+const FarmUpgradeCost = 5000;
+
+const AirportConstructCost = 10000;
+const MissileConstructCost = 10000;
+const TrenchConstructCost = 10000;
+const FortConstructCost = 200000;
+
+const AirportMoveCost = 40;
+const MissileLaunchCost = 40;
+const MissileDamage = 1500;
+
+const CityDefend = 0.05;
+const IndustryDefend = 0.005;
+const TrenchDefend = 0.8;
+const FortAttack = 1.1;
+const NatureDefend = 0.9;
+
+const DamageToEquip = 500;
+const AttackFoodConsume = 5;
+const EquipSoldierDamage = 2;
+const NotEquipSoldierDamage = 10;
+const EquipToSoldier = 100;
+const ArmyDamageWithoutFood = 0.5;
+
+const CitySoldierIncrease = 1000;
+const CityFoodIncrease = 1000;
+const IndustryEquipIncrease = 10;
+const FarmFoodIncrease = 2000;
+
+const SoldierConsumeFood = 10;
+const SoldierAway = 0.6;
+
+const ColorAuthority = [new cc.Color(255, 0, 0), new cc.Color(0, 255, 0), new cc.Color(0, 0, 255)]
+
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -24,9 +61,6 @@ export default class NewClass extends cc.Component {
 
     @property(cc.Prefab)
     LinePrefab: cc.Prefab = null;
-
-    @property(cc.Node)
-    Background: cc.Node = null;
 
     @property()
     MapGrid: any = null;
@@ -154,6 +188,9 @@ export default class NewClass extends cc.Component {
     @property
     hasMissileLaunched: any = null;
 
+    @property
+    KillCounter: any = null;
+
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
@@ -210,6 +247,11 @@ export default class NewClass extends cc.Component {
                 this.ShowGridInformation(this.GridX, this.GridY);
             })
         });
+        firebase.database().ref("Room/" + this.room_id + "/state/").on("value", (data) => {
+            if (data.val() == "Result") {
+                cc.director.loadScene("Result");
+            }
+        });
     }
 
     ServerDesuWa() {
@@ -230,83 +272,83 @@ export default class NewClass extends cc.Component {
                     this.ServerMap[res.I][res.J].equip -= res.equip;
                     this.ServerMap[res.I][res.J].food -= res.food;
                 } else if (this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].authority != this.ServerMap[res.destI][res.destJ].authority) {
-                    res.food -= res.soldier / 5; // attack punishment
+                    res.food -= res.soldier / AttackFoodConsume; // attack punishment
                     res.soldier = Math.min(res.soldier, this.ServerMap[res.I][res.J].soldier);
                     res.equip = Math.min(res.equip, this.ServerMap[res.I][res.J].equip);
                     res.food = Math.min(res.food, this.ServerMap[res.I][res.J].food);
 
-                    let damage = (res.equip * 100 >= res.soldier ? Math.round(res.soldier / 2) : Math.round((res.soldier - res.equip * 100) / 10) + res.equip * 50);
-                    damage = Math.round(damage * (1.0 - 0.05 * this.ServerMap[res.destI][res.destJ].city) * (1.0 - 0.005 * this.ServerMap[res.destI][res.destJ].industry));
+                    let damage = (res.equip * EquipToSoldier >= res.soldier ? Math.round(res.soldier / EquipSoldierDamage) : Math.round((res.soldier - res.equip * EquipToSoldier) / NotEquipSoldierDamage) + res.equip * EquipToSoldier * EquipSoldierDamage);
+                    damage = Math.round(damage * (1.0 - CityDefend * this.ServerMap[res.destI][res.destJ].city) * (1.0 - IndustryDefend * this.ServerMap[res.destI][res.destJ].industry));
                     if (res.soldier > res.food)
-                        damage = Math.round(0.5 * damage * (1 + res.food / res.soldier));
+                        damage = Math.round(ArmyDamageWithoutFood * damage + (1 - ArmyDamageWithoutFood) * damage * res.food / res.soldier);
                     if (this.ServerMap[res.destI][res.destJ].trench)
-                        damage = Math.round(damage * 0.8);
+                        damage = Math.round(damage * TrenchDefend);
                     if (this.ServerMap[res.destI][res.destJ].nature)
-                        damage = Math.round(damage * 0.9);
+                        damage = Math.round(damage * NatureDefend);
                     if (this.ServerMap[res.I][res.J].fort)
-                        damage = Math.round(damage * 1.1);
-                    console.log(damage)
-                    let counterdamage = (this.ServerMap[res.destI][res.destJ].equip * 100 >= this.ServerMap[res.destI][res.destJ].soldier ? Math.round(this.ServerMap[res.destI][res.destJ].soldier / 2) : Math.round((this.ServerMap[res.destI][res.destJ].soldier - this.ServerMap[res.destI][res.destJ].equip * 100) / 10) + this.ServerMap[res.destI][res.destJ].equip * 50);
-                    if (this.ServerMap[res.destI][res.destJ].fort)
-                        counterdamage = Math.round(counterdamage * 1.1);
-                    if (this.ServerMap[res.destI][res.destJ].soldier > this.ServerMap[res.destI][res.destJ].food) {
-                        counterdamage = Math.round(0.5 * counterdamage * (1 + this.ServerMap[res.destI][res.destJ].food / this.ServerMap[res.destI][res.destJ].soldier));
-                    }
+                        damage = Math.round(damage * FortAttack);
                     
-                    console.log(damage);
-                    console.log(counterdamage);
+                    let counterdamage = (this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier >= this.ServerMap[res.destI][res.destJ].soldier ? Math.round(this.ServerMap[res.destI][res.destJ].soldier / EquipSoldierDamage) : Math.round((this.ServerMap[res.destI][res.destJ].soldier - this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier) / NotEquipSoldierDamage) + this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier * EquipSoldierDamage);
+                    if (this.ServerMap[res.destI][res.destJ].fort)
+                        counterdamage = Math.round(counterdamage * FortAttack);
+                    if (this.ServerMap[res.destI][res.destJ].soldier > this.ServerMap[res.destI][res.destJ].food) {
+                        counterdamage = Math.round(ArmyDamageWithoutFood * counterdamage + (1 - ArmyDamageWithoutFood) * counterdamage * this.ServerMap[res.destI][res.destJ].food / this.ServerMap[res.destI][res.destJ].soldier);
+                    }
 
+                    this.KillCounter[this.ServerMap[res.I][res.J].authority] += Math.min(this.ServerMap[res.destI][res.destJ].soldier, damage);
                     this.ServerMap[res.destI][res.destJ].soldier -= Math.min(this.ServerMap[res.destI][res.destJ].soldier, damage);
-                    this.ServerMap[res.destI][res.destJ].equip -= Math.min(this.ServerMap[res.destI][res.destJ].equip, Math.round(damage / 500.0));
+                    this.ServerMap[res.destI][res.destJ].equip -= Math.min(this.ServerMap[res.destI][res.destJ].equip, Math.round(damage / DamageToEquip));
                     
                     if (this.ServerMap[res.destI][res.destJ].soldier == 0 && counterdamage < res.soldier) {
                         this.ServerMap[res.I][res.J].soldier -= res.soldier;
                         this.ServerMap[res.I][res.J].equip -= res.equip;
                         this.ServerMap[res.I][res.J].food -= res.food;
 
+                        this.KillCounter[this.ServerMap[res.destI][res.destJ].authority] += counterdamage;
                         this.ServerMap[res.destI][res.destJ].authority = res.authority;
                         this.ServerMap[res.destI][res.destJ].soldier = res.soldier - counterdamage;
-                        this.ServerMap[res.destI][res.destJ].equip += Math.max(0, res.equip - Math.round(damage / 500.0));
+                        this.ServerMap[res.destI][res.destJ].equip += Math.max(0, res.equip - Math.round(damage / DamageToEquip));
                         this.ServerMap[res.destI][res.destJ].food += res.food;
                     } else {
+                        this.KillCounter[this.ServerMap[res.destI][res.destJ].authority] += Math.min(res.soldier, counterdamage);
                         this.ServerMap[res.I][res.J].soldier -= Math.min(res.soldier, counterdamage);
-                        this.ServerMap[res.I][res.J].equip -= Math.min(res.equip, Math.round(counterdamage / 500.0));
+                        this.ServerMap[res.I][res.J].equip -= Math.min(res.equip, Math.round(counterdamage / DamageToEquip));
                     }
                 }
             });
             firebase.database().ref("Room/" + this.room_id + "/action/construct").on("child_added", (data) => {
                 let res = data.val();
-                if (res.construction == "Airport" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= 10000) {
+                if (res.construction == "Airport" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= AirportConstructCost) {
                     this.ServerMap[res.I][res.J].airport = true;
-                    this.ServerMap[res.I][res.J].food -= 10000;
-                } else if (res.construction == "Missile" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= 10000) {
+                    this.ServerMap[res.I][res.J].food -= AirportConstructCost;
+                } else if (res.construction == "Missile" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= MissileConstructCost) {
                     this.ServerMap[res.I][res.J].missile = true;
-                    this.ServerMap[res.I][res.J].food -= 10000;
-                } else if (res.construction == "Trench" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= 10000) {
+                    this.ServerMap[res.I][res.J].food -= MissileConstructCost;
+                } else if (res.construction == "Trench" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= TrenchConstructCost) {
                     this.ServerMap[res.I][res.J].trench = true;
-                    this.ServerMap[res.I][res.J].food -= 10000;
-                } else if (res.construction == "Fort" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= 20000) {
+                    this.ServerMap[res.I][res.J].food -= TrenchConstructCost;
+                } else if (res.construction == "Fort" && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].food >= FortConstructCost) {
                     this.ServerMap[res.I][res.J].fort = true;
-                    this.ServerMap[res.I][res.J].food -= 20000;
+                    this.ServerMap[res.I][res.J].food -= FortConstructCost;
                 }
             });
             firebase.database().ref("Room/" + this.room_id + "/action/upgrade").on("child_added", (data) => {
                 let res = data.val();
-                if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "city" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].city + 1) * 8000 && this.ServerMap[res.I][res.J].city < 5) {
-                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].city + 1) * 8000;
+                if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "city" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].city + 1) * CityUpgradeCost && this.ServerMap[res.I][res.J].city < 5) {
+                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].city + 1) * CityUpgradeCost;
                     this.ServerMap[res.I][res.J].city += 1;
-                } else if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "industry" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].industry + 1) * 5000 && this.ServerMap[res.I][res.J].industry < 5) {
-                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].industry + 1) * 5000;
+                } else if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "industry" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].industry + 1) * IndustryUpgradeCost && this.ServerMap[res.I][res.J].industry < 5) {
+                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].industry + 1) * IndustryUpgradeCost;
                     this.ServerMap[res.I][res.J].industry += 1;
-                } else if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "farm" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].farm + 1) * 5000 && this.ServerMap[res.I][res.J].farm < 5) {
-                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].farm + 1) * 5000;
+                } else if (this.ServerMap[res.I][res.J].authority == res.authority && res.upgrade == "farm" && this.ServerMap[res.I][res.J].food >= (this.ServerMap[res.I][res.J].farm + 1) * FarmUpgradeCost && this.ServerMap[res.I][res.J].farm < 5) {
+                    this.ServerMap[res.I][res.J].food -= (this.ServerMap[res.I][res.J].farm + 1) * FarmUpgradeCost;
                     this.ServerMap[res.I][res.J].farm += 1;
                 }
             });
             firebase.database().ref("Room/" + this.room_id + "/action/special").on("child_added", (data) => {
                 let res = data.val();
-                if (res.special == "airport" && this.ServerMap[res.I][res.J].authority == this.ServerMap[res.destI][res.destJ].authority && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].equip >= 40) {
-                    this.ServerMap[res.I][res.J].equip -= 40;
+                if (res.special == "airport" && this.ServerMap[res.I][res.J].authority == this.ServerMap[res.destI][res.destJ].authority && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].equip >= AirportMoveCost) {
+                    this.ServerMap[res.I][res.J].equip -= AirportMoveCost;
                     res.soldier = Math.min(res.soldier, this.ServerMap[res.I][res.J].soldier);
                     res.equip = Math.min(res.equip, this.ServerMap[res.I][res.J].equip);
                     res.food = Math.min(res.food, this.ServerMap[res.I][res.J].food);
@@ -316,9 +358,9 @@ export default class NewClass extends cc.Component {
                     this.ServerMap[res.I][res.J].soldier -= res.soldier;
                     this.ServerMap[res.I][res.J].equip -= res.equip;
                     this.ServerMap[res.I][res.J].food -= res.food;
-                } else if (res.special == "missile" && this.ServerMap[res.I][res.J].authority != this.ServerMap[res.destI][res.destJ].authority && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].equip >= 40) {
-                    this.ServerMap[res.I][res.J].equip -= 40;
-                    this.ServerMap[res.destI][res.destJ].soldier = Math.max(0, this.ServerMap[res.destI][res.destJ].soldier - 1500);
+                } else if (res.special == "missile" && this.ServerMap[res.I][res.J].authority != this.ServerMap[res.destI][res.destJ].authority && this.ServerMap[res.I][res.J].authority == res.authority && this.ServerMap[res.I][res.J].equip >= MissileLaunchCost) {
+                    this.ServerMap[res.I][res.J].equip -= MissileLaunchCost;
+                    this.ServerMap[res.destI][res.destJ].soldier = Math.max(0, this.ServerMap[res.destI][res.destJ].soldier - MissileDamage);
                 } 
             })
         }
@@ -329,13 +371,13 @@ export default class NewClass extends cc.Component {
         for (let i = 0; i < this.ServerMap.height; i ++ ) {
             for (let j = 0; j < this.ServerMap.width; j ++ ) {
                 if (this.ServerMap[i][j].food == 0) {
-                    this.ServerMap[i][j].soldier = Math.round(0.6 * this.ServerMap[i][j].soldier);
+                    this.ServerMap[i][j].soldier = Math.round(SoldierAway * this.ServerMap[i][j].soldier);
                 }
-                this.ServerMap[i][j].food += 2000 * this.ServerMap[i][j].farm + this.ServerMap[i][j].city * 1000;
-                this.ServerMap[i][j].food -= this.ServerMap[i][j].soldier / 10;
+                this.ServerMap[i][j].food += FarmFoodIncrease * this.ServerMap[i][j].farm + this.ServerMap[i][j].city * CityFoodIncrease;
+                this.ServerMap[i][j].food -= this.ServerMap[i][j].soldier / SoldierConsumeFood;
                 this.ServerMap[i][j].food = Math.max(0, this.ServerMap[i][j].food);
-                this.ServerMap[i][j].soldier += 1000 * this.ServerMap[i][j].city;
-                this.ServerMap[i][j].equip += 10 * this.ServerMap[i][j].industry;
+                this.ServerMap[i][j].soldier += CitySoldierIncrease * this.ServerMap[i][j].city;
+                this.ServerMap[i][j].equip += IndustryEquipIncrease * this.ServerMap[i][j].industry;
 
                 this.ServerMap[i][j].soldier = Math.round(this.ServerMap[i][j].soldier);
                 this.ServerMap[i][j].equip = Math.round(this.ServerMap[i][j].equip);
@@ -352,7 +394,11 @@ export default class NewClass extends cc.Component {
             }
         }
         if (Over) {
-            // do something
+            console.log("Over")
+            for (let i = 0; i < this.GameInfo.map.number; i ++ )
+                firebase.database().ref("Room/" + this.room_id + "/counter/" + i).set(this.KillCounter[i]);
+            firebase.database().ref("Room/" + this.room_id + "/winner/").set(this.ServerMap[0][0].authority);
+            firebase.database().ref("Room/" + this.room_id + "/state/").set("Result");
         }
     }
 
@@ -501,10 +547,12 @@ export default class NewClass extends cc.Component {
     AdjustSize() {
         this.node.width = this.GameInfo.map.width * GridSize;
         this.node.height = this.GameInfo.map.height * GridSize;
-        this.Background.width = Math.max(1200, this.node.width);
-        this.Background.height = Math.max(700, this.node.height);
     }
     InitGridArrays() {
+        this.KillCounter = new Array(this.GameInfo.map.number);
+        for (let i = 0; i < this.GameInfo.map.number; ++ i) 
+            this.KillCounter[i] = 0;
+
         this.MapGrid = new Array(this.GameInfo.map.height);
         this.NumberTop = new Array(this.GameInfo.map.height);
         this.NumberCenter = new Array(this.GameInfo.map.height);
@@ -562,7 +610,7 @@ export default class NewClass extends cc.Component {
     }
 
     CityLevelUpgradeClick() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].city + 1) * 8000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].city + 1) * CityUpgradeCost;
         this.GameInfo.map[this.GridX][this.GridY].city += 1;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/upgrade/").push({
@@ -583,7 +631,7 @@ export default class NewClass extends cc.Component {
         }
     }
     IndustryLevelUpgradeClick() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].industry + 1) * 5000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].industry + 1) * IndustryUpgradeCost;
         this.GameInfo.map[this.GridX][this.GridY].industry += 1;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/upgrade/").push({
@@ -604,7 +652,7 @@ export default class NewClass extends cc.Component {
         }
     }
     FarmLevelUpgradeClick() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].farm + 1) * 5000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= (this.GameInfo.map[this.GridX][this.GridY].farm + 1) * FarmUpgradeCost;
         this.GameInfo.map[this.GridX][this.GridY].farm += 1;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/upgrade/").push({
@@ -640,7 +688,7 @@ export default class NewClass extends cc.Component {
     }
 
     AirportToggleCheck() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= AirportConstructCost;
         this.GameInfo.map[this.GridX][this.GridY].airport = true;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
@@ -656,7 +704,7 @@ export default class NewClass extends cc.Component {
         }
     }
     MissileToggleCheck() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= MissileConstructCost;
         this.GameInfo.map[this.GridX][this.GridY].missile = true;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
@@ -672,7 +720,7 @@ export default class NewClass extends cc.Component {
         }
     }
     TrenchToggleCheck() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= 10000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= TrenchConstructCost;
         this.GameInfo.map[this.GridX][this.GridY].trench = true;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
@@ -688,7 +736,7 @@ export default class NewClass extends cc.Component {
         }
     }
     FortToggleCheck() {
-        this.GameInfo.map[this.GridX][this.GridY].food -= 20000;
+        this.GameInfo.map[this.GridX][this.GridY].food -= FortConstructCost;
         this.GameInfo.map[this.GridX][this.GridY].fort = true;
         this.ShowGridInformation(this.GridX, this.GridY);
         firebase.database().ref("Room/" + this.room_id + "/action/construct/").push({
@@ -706,11 +754,11 @@ export default class NewClass extends cc.Component {
     // 移動畫面時會觸發按鍵的點擊
     AirportGridMoving(event: any, i: number, j: number) {
         if (event.getLocationX() <= 1200) {
-            if (Math.abs(i - this.GridX) + Math.abs(j - this.GridY) <= 2 && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] && this.GameInfo.map[this.GridX][this.GridY].equip >= 40) {
+            if (Math.abs(i - this.GridX) + Math.abs(j - this.GridY) <= 2 && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] && this.GameInfo.map[this.GridX][this.GridY].equip >= AirportMoveCost) {
                 let SoldierMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].soldier * this.SoldierSlider.progress);
                 let EquipMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].equip * this.EquipSlider.progress);
                 let FoodMoved = Math.round(this.GameInfo.map[this.GridX][this.GridY].food * this.FoodSlider.progress);
-                this.GameInfo.map[this.GridX][this.GridY].equip -= 40;
+                this.GameInfo.map[this.GridX][this.GridY].equip -= AirportMoveCost;
                 EquipMoved = Math.min(EquipMoved, this.GameInfo.map[this.GridX][this.GridY].equip)
 
                 this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
@@ -743,8 +791,8 @@ export default class NewClass extends cc.Component {
     }
     MissileGridLaunching(event: any, i: number, j: number) {
         if (event.getLocationX() <= 1200 && this.hasMissileLaunched[this.GridX][this.GridY] == false) {
-            if (Math.abs(i - this.GridX) + Math.abs(j - this.GridY) <= 3 && this.GameInfo.map[i][j].authority != this.GameInfo.authority[this.user.uid] && this.GameInfo.map[this.GridX][this.GridY].equip >= 40) {
-                this.GameInfo.map[this.GridX][this.GridY].equip -= 40;
+            if (Math.abs(i - this.GridX) + Math.abs(j - this.GridY) <= 3 && this.GameInfo.map[i][j].authority != this.GameInfo.authority[this.user.uid] && this.GameInfo.map[this.GridX][this.GridY].equip >= MissileLaunchCost) {
+                this.GameInfo.map[this.GridX][this.GridY].equip -= MissileLaunchCost;
                 this.hasMissileLaunched[this.GridX][this.GridY] = true;
 
                 if (this.ShowState == "Army") {
@@ -804,13 +852,13 @@ export default class NewClass extends cc.Component {
             this.IndustryLevelText.string = "Industry: " + this.GameInfo.map[i][j].industry;
             this.FarmLevelText.string = "Farm: " + this.GameInfo.map[i][j].farm;
 
-            this.CityUpgradeText.string = "+ " + (this.GameInfo.map[i][j].city + 1) * 8000;
-            this.IndustryUpgradeText.string = "+ " + (this.GameInfo.map[i][j].industry + 1) * 5000;
-            this.FarmUpgradeText.string = "+ " + (this.GameInfo.map[i][j].farm + 1) * 5000;
+            this.CityUpgradeText.string = "+ " + (this.GameInfo.map[i][j].city + 1) * CityUpgradeCost;
+            this.IndustryUpgradeText.string = "+ " + (this.GameInfo.map[i][j].industry + 1) * IndustryUpgradeCost;
+            this.FarmUpgradeText.string = "+ " + (this.GameInfo.map[i][j].farm + 1) * FarmUpgradeCost;
 
-            this.CityUpgradeBtn.interactable = !(this.GameInfo.map[i][j].city == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].city + 1) * 8000);
-            this.IndustryUpgradeBtn.interactable = !(this.GameInfo.map[i][j].industry == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].industry + 1) * 5000);
-            this.FarmUpgradeBtn.interactable = !(this.GameInfo.map[i][j].farm == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].farm + 1) * 5000);
+            this.CityUpgradeBtn.interactable = !(this.GameInfo.map[i][j].city == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].city + 1) * CityUpgradeCost);
+            this.IndustryUpgradeBtn.interactable = !(this.GameInfo.map[i][j].industry == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].industry + 1) * IndustryUpgradeCost);
+            this.FarmUpgradeBtn.interactable = !(this.GameInfo.map[i][j].farm == "5" || this.GameInfo.map[i][j].food < (this.GameInfo.map[i][j].farm + 1) * FarmUpgradeCost);
 
             this.AirportToggle.isChecked = (this.GameInfo.map[i][j].airport == true);
             this.MissileToggle.isChecked = (this.GameInfo.map[i][j].missile == true);
@@ -819,19 +867,19 @@ export default class NewClass extends cc.Component {
             this.NatureToggle.isChecked = (this.GameInfo.map[i][j].nature == true);
 
             this.AirportMoveBtn.interactable = (this.isAirportMoving == false);
-            this.AirportMoveBtn.node.active = (this.AirportToggle.isChecked && this.GameInfo.map[i][j].equip >= 40 && this.isMissileLaunching == false);
+            this.AirportMoveBtn.node.active = (this.AirportToggle.isChecked && this.GameInfo.map[i][j].equip >= AirportMoveCost && this.isMissileLaunching == false);
             this.MissileLaunchBtn.interactable = (this.isMissileLaunching == false);
-            this.MissileLaunchBtn.node.active = (this.MissileToggle.isChecked && this.GameInfo.map[i][j].equip >= 40 && this.isAirportMoving == false && this.hasMissileLaunched[i][j] == false);
+            this.MissileLaunchBtn.node.active = (this.MissileToggle.isChecked && this.GameInfo.map[i][j].equip >= MissileLaunchCost && this.isAirportMoving == false && this.hasMissileLaunched[i][j] == false);
             
             this.AirportPrice.node.active = !this.AirportToggle.isChecked;
             this.MissilePrice.node.active = !this.MissileToggle.isChecked;
             this.TrenchPrice.node.active = !this.TrenchToggle.isChecked;
             this.FortPrice.node.active = !this.FortToggle.isChecked;
 
-            this.AirportToggle.interactable = !(this.GameInfo.map[i][j].airport == true || this.GameInfo.map[i][j].food < 10000);
-            this.MissileToggle.interactable = !(this.GameInfo.map[i][j].missile == true || this.GameInfo.map[i][j].food < 10000);
-            this.TrenchToggle.interactable = !(this.GameInfo.map[i][j].trench == true || this.GameInfo.map[i][j].food < 10000);
-            this.FortToggle.interactable = !(this.GameInfo.map[i][j].fort == true || this.GameInfo.map[i][j].food < 20000);
+            this.AirportToggle.interactable = !(this.GameInfo.map[i][j].airport == true || this.GameInfo.map[i][j].food < AirportConstructCost);
+            this.MissileToggle.interactable = !(this.GameInfo.map[i][j].missile == true || this.GameInfo.map[i][j].food < MissileConstructCost);
+            this.TrenchToggle.interactable = !(this.GameInfo.map[i][j].trench == true || this.GameInfo.map[i][j].food < TrenchConstructCost);
+            this.FortToggle.interactable = !(this.GameInfo.map[i][j].fort == true || this.GameInfo.map[i][j].food < FortConstructCost);
             
         } else {
             this.SoldierNumber.string = "Soldier: 0/0";
@@ -952,9 +1000,8 @@ export default class NewClass extends cc.Component {
                 
                 if (i == this.GridX && j == this.GridY && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid])
                     this.Fog[i][j].opacity = 150;
-                
-                if (this.GameInfo.map[i][j].authority == 0) this.Identity[i][j].color = new cc.Color(255, 0, 0);
-                else if (this.GameInfo.map[i][j].authority == 1) this.Identity[i][j].color = new cc.Color(0, 255, 0);
+
+                this.Identity[i][j].color = ColorAuthority[this.GameInfo.map[i][j].authority];
             }
         }
     }
@@ -970,12 +1017,12 @@ export default class NewClass extends cc.Component {
     }
     MoveView(event: any) {
         this.Camera.setPosition(this.mouseX - event.getLocationX(), this.mouseY - event.getLocationY());
-        if (this.Camera.x > this.Background.width - 1200)
-            this.Camera.x = this.Background.width - 1200;
+        if (this.Camera.x > this.node.width - 1200)
+            this.Camera.x = this.node.width - 1200;
         if (this.Camera.x < 0)
             this.Camera.x = 0;
-        if (this.Camera.y > this.Background.height - 700)
-            this.Camera.y = this.Background.height - 700;
+        if (this.Camera.y > this.node.height - 700)
+            this.Camera.y = this.node.height - 700;
         if (this.Camera.y < 0)
             this.Camera.y = 0;
         this.InforBar.x = this.Camera.x + 600;

@@ -10,41 +10,47 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class NewClass extends cc.Component {
 
+    @property
+    user: any = null;
+
     @property(cc.Label)
     email: cc.Label = null;
 
     @property(cc.Label)
-    password: cc.Label = null;
+    win: cc.Label = null;
+
+    @property(cc.Label)
+    lose: cc.Label = null;
+
+    @property(cc.Label)
+    killnum: cc.Label = null;
 
     @property(cc.Label)
     error: cc.Label = null;
+
+    @property(cc.Sprite)
+    photo: cc.Sprite = null;
 
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
 
     start () {
-        this.node.on(cc.Node.EventType.MOUSE_DOWN, this.SignUp, this);
-    }
-
-    // update (dt : number) {}
-
-    SignUp (event: any) {
-        firebase.auth().createUserWithEmailAndPassword(this.email.string, this.password.string)
-        .then((e : any) => {
-            firebase.database().ref("Account/" + e.user.uid).set({
-                win: 0,
-                lose: 0,
-                killnum: 0,
-                photo: null
-            });
-            cc.director.loadScene("Room");
+        this.user = firebase.auth().currentUser;
+        firebase.database().ref("Account/" + this.user.uid).once("value", data => {
+            this.email.string = this.user.email;
+            this.win.string = data.val().win;
+            this.lose.string = data.val().lose;
+            this.killnum.string = data.val().killnum;
         })
         .catch((e: any) => {
             this.error.string = e.message;
-            this.email.string = "";
-            this.password.string = "";
-        });
-    }
-}
+        })
 
+        this.photo.node.on(cc.Node.EventType.MOUSE_DOWN, () => {
+            // I can't...
+        }, this)
+    }
+
+    // update (dt) {}
+}
