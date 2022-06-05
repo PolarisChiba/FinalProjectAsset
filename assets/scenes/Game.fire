@@ -562,7 +562,7 @@
     "FortToggle": {
       "__id__": 128
     },
-    "RiverToggle": {
+    "NatureToggle": {
       "__id__": 136
     },
     "AirportMoveBtn": {
@@ -586,6 +586,8 @@
     "GameTurn": {
       "__id__": 13
     },
+    "hasMissileLaunched": null,
+    "isAirportMoving": false,
     "GridX": 0,
     "GridY": 0,
     "ShowState": "Name",
@@ -6787,7 +6789,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "RiverToggle",
+    "_name": "NatureToggle",
     "_objFlags": 0,
     "_parent": {
       "__id__": 74
@@ -7122,8 +7124,8 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "River",
-    "_N$string": "River",
+    "_string": "Nature",
+    "_N$string": "Nature",
     "_fontSize": 20,
     "_lineHeight": 20,
     "_enableWrapText": true,
