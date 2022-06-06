@@ -37,6 +37,7 @@ export default class NewClass extends cc.Component {
         let players = null;
         firebase.database().ref("Room/").orderByChild('state').equalTo("wait").once("value", data => {
             room = data.val();
+            
         }).then(() => {
             if (room == null) {
                 room_id = firebase.database().ref("Room/").push().getKey();

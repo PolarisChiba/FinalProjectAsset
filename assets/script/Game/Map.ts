@@ -45,6 +45,7 @@ const SoldierConsumeFood = 10;
 const SoldierAway = 0.6;
 
 const ColorAuthority = [new cc.Color(255, 0, 0), new cc.Color(0, 255, 0), new cc.Color(0, 0, 255)]
+const BadgeFadeTime = 3;
 
 
 @ccclass
@@ -191,9 +192,17 @@ export default class NewClass extends cc.Component {
     @property
     KillCounter: any = null;
 
+    @property(cc.Sprite)
+    Badge: cc.Sprite = null;
+
+    @property(cc.Button)
+    Back: cc.Button = null;
+
     // LIFE-CYCLE CALLBACKS:
 
-    // onLoad () {}
+    onLoad () {
+        this.Badge.node.runAction(cc.fadeOut(BadgeFadeTime));
+    }
 
     start () {
         this.user = firebase.auth().currentUser;
@@ -202,14 +211,16 @@ export default class NewClass extends cc.Component {
         }).then(() => {
             firebase.database().ref("Room/" + this.room_id).once("value", data => {
                 this.GameInfo = data.val();
-            
-                this.AdjustSize();
-                this.InitGridArrays();
-                this.InitInfoBar();
-                this.ShowName();
-                this.ServerDesuWa();
-                this.ClientDesuWa();
-                this.ShowGridInformation(0, 0);
+                
+                this.scheduleOnce(() => {
+                    this.AdjustSize();
+                    this.InitGridArrays();
+                    this.InitInfoBar();
+                    this.ShowName();
+                    this.ServerDesuWa();
+                    this.ClientDesuWa();
+                    this.ShowGridInformation(0, 0);
+                }, BadgeFadeTime);
             });
         }).then(() => {
             cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.RegisterKeyBoardEvent, this);
@@ -226,6 +237,10 @@ export default class NewClass extends cc.Component {
             this.FarmUpgradeBtn.node.on("click", this.FarmLevelUpgradeClick, this);
             this.AirportMoveBtn.node.on("click", this.AirportMoveClick, this);
             this.MissileLaunchBtn.node.on("click", this.MissileLaunchClick, this);
+            this.Back.node.on("click", () => {
+                firebase.database().ref("Room/" + this.room_id).remove();
+                cc.director.loadScene("Room");
+            }, this);
         })
     }
 
@@ -234,8 +249,13 @@ export default class NewClass extends cc.Component {
     ClientDesuWa() {
         firebase.database().ref("Room/" + this.room_id + "/turn").on("value", (data) => {
             this.GameTurn.string = "Turn: " + data.val();
-            firebase.database().ref("Room/" + this.room_id + "/map").once("value", (data) => {
-                this.GameInfo.map = data.val();
+            firebase.database().ref("Room/" + this.room_id).once("value", (data) => {
+                this.GameInfo = data.val();
+
+                if (this.GameInfo == null) {
+                    cc.director.loadScene("Room");
+                }
+
                 if (this.ShowState == "Name") this.ShowName();
                 else if (this.ShowState == "Army") this.ShowArmy();
                 else if (this.ShowState == "Level") this.ShowLevel();
@@ -245,12 +265,19 @@ export default class NewClass extends cc.Component {
                     }
                 }
                 this.ShowGridInformation(this.GridX, this.GridY);
+
+                if (this.GameInfo.state == "Result") {
+                    firebase.database().ref("Account/" + this.user.uid + "/result").set({
+                        num: this.GameInfo.counter[this.GameInfo.authority[this.user.uid]],
+                        end: (this.GameInfo.winner == this.GameInfo.authority[this.user.uid])
+                    }).then(() => {
+                        this.node.runAction(cc.fadeOut(3));
+                        this.scheduleOnce(() => {
+                            cc.director.loadScene("Result");
+                        }, 3);
+                    })
+                }
             })
-        });
-        firebase.database().ref("Room/" + this.room_id + "/state/").on("value", (data) => {
-            if (data.val() == "Result") {
-                cc.director.loadScene("Result");
-            }
         });
     }
 
@@ -395,10 +422,13 @@ export default class NewClass extends cc.Component {
         }
         if (Over) {
             console.log("Over")
-            for (let i = 0; i < this.GameInfo.map.number; i ++ )
+            for (let i = 0; i < this.GameInfo.map.number; i ++ ) 
                 firebase.database().ref("Room/" + this.room_id + "/counter/" + i).set(this.KillCounter[i]);
             firebase.database().ref("Room/" + this.room_id + "/winner/").set(this.ServerMap[0][0].authority);
             firebase.database().ref("Room/" + this.room_id + "/state/").set("Result");
+            this.scheduleOnce(() => {
+                firebase.database().ref("Room/" + this.room_id).remove();
+            }, 10);
         }
     }
 
@@ -603,6 +633,7 @@ export default class NewClass extends cc.Component {
         }
     }
     InitInfoBar() {
+        this.InforBar.opacity = 255;
         this.SoldierSlider.node.on("slide", this.SoliderNumberSlide, this);
         this.EquipSlider.node.on("slide", this.EquipNumberSlide, this);
         this.FoodSlider.node.on("slide", this.FoodNumberSlide, this);

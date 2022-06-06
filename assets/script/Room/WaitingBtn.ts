@@ -34,6 +34,9 @@ export default class NewClass extends cc.Component {
     @property(cc.Button)
     BtnCreate: cc.Button = null;
 
+    @property(cc.Button)
+    BtnResetAll: cc.Button = null;
+
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
@@ -42,6 +45,23 @@ export default class NewClass extends cc.Component {
         this.flag = false;
         this.node.active = false;
         this.node.on(cc.Node.EventType.MOUSE_DOWN, this.CancelWaiting, this);
+        this.BtnResetAll.node.on(cc.Node.EventType.MOUSE_DOWN, () => {
+            this.time = 0;
+            this.flag = false;
+            this.Btn1v1.interactable = true;
+            this.Btn1v2.interactable = true;
+            this.BtnPrivate.interactable = true;
+            this.BtnCreate.interactable = true;
+            this.waiting_time.string = "Waiting...";
+            this.node.active = false;
+            firebase.database().ref("Room/").orderByChild("state").equalTo("wait").once("value", data => {
+                for (let i = 0; i < Object.keys(data.val()).length; i ++ ) {
+                    let room_id = Object.keys(data.val())[i];
+                    console.log(room_id)
+                    firebase.database().ref("Room/" + room_id).remove();
+                }
+            })
+        }, this);
         this.Counter = () => {
             if (this.node.active == false) {
                 this.unschedule(this.Counter);
