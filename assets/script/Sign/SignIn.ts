@@ -19,9 +19,17 @@ export default class NewClass extends cc.Component {
     @property(cc.Label)
     error: cc.Label = null;
 
+    @property
+    BGM: any = null;
+
+    @property(cc.AudioClip)
+    overture: cc.AudioClip = null;
+
     // LIFE-CYCLE CALLBACKS:
 
-    // onLoad () {}
+    onLoad () {
+        this.BGM = cc.audioEngine.play(this.overture, true, 1);
+    }
 
     start () {
         this.node.on(cc.Node.EventType.MOUSE_DOWN, this.SignIn, this);

@@ -205,6 +205,7 @@ export default class NewClass extends cc.Component {
     }
 
     start () {
+
         this.user = firebase.auth().currentUser;
         firebase.database().ref("Player/" + this.user.uid + "/room_id").once("value", data => {
             this.room_id = data.val();

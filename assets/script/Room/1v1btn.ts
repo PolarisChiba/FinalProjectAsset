@@ -13,11 +13,15 @@ export default class NewClass extends cc.Component {
     @property(cc.Button)
     WaitingBtn: cc.Button = null;
 
+    @property
+    MapName: any = null;
+
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
 
     start () {
+        this.MapName = "Rwar";
         this.node.on(cc.Node.EventType.MOUSE_DOWN, this.Pushed, this);
     }
 
@@ -26,54 +30,64 @@ export default class NewClass extends cc.Component {
     Pushed (event: any) {
         if (this.WaitingBtn.node.active == false) {
             this.WaitingBtn.node.active = true;
-            this.Apply1v1();
+            this.Apply();
         }
     }
 
-    Apply1v1() {
+    Apply() {
         let user = firebase.auth().currentUser;
         let room = null;
         let room_id = null;
         let players = null;
+        
+
         firebase.database().ref("Room/").orderByChild('state').equalTo("wait").once("value", data => {
             room = data.val();
             
-        }).then(() => {
-            if (room == null) {
+            let ok = false;
+            if (room != null) {
+                for (let i = 0; i < Object.keys(room).length; i ++ ) {
+                    if (room[Object.keys(room)[i]].mapname == this.MapName) {
+                        ok = true;
+                        room_id = Object.keys(room)[i];
+                    }
+                }
+            }
+
+            if (room == null || ok == false) {
                 room_id = firebase.database().ref("Room/").push().getKey();
                 firebase.database().ref("Room/" + room_id + "/").set({
-                    type: "1v1",
-                    mapname: "Rwar",
+                    mapname: this.MapName,
                     state: "wait"
                 });
                 let res = {}
                 res[user.uid] = user.email;
                 firebase.database().ref("Room/" + room_id + "/player/").set(res);
             } else {
-                room_id = Object.keys(room)[0];
                 let res = {}
                 res[user.uid] = user.email;
 
-                firebase.database().ref("Room/" + room_id + "/player/").update(res).then(() => {
+                firebase.database().ref("Room/" + room_id + "/player/").update(res);
+                firebase.database().ref("Map/" + this.MapName + "/number").once("value", (data) => {
                     players = room[room_id].player;
-                    if (Object.keys(players).length == 1) {
+                    if (Object.keys(players).length == data.val() - 1) {
                         let tmp = [];
                         for (let i in Object.keys(players)) {
                             tmp.push(Object.keys(players)[i]);
                         }
-                        tmp.push(Object.keys(res)[0]);
+                        tmp.push(user.uid);
                         for (let i = 0; i < tmp.length; ++ i) {
                             firebase.database().ref("Room/" + room_id + "/authority/" + tmp[i]).set(i);
                         }
                         firebase.database().ref("Room/" + room_id + "/server/").set(user.email);
                         firebase.database().ref("Room/" + room_id + "/turn/").set(0);
-                        firebase.database().ref("Map/" + "Rwar/").once("value", data => {
+                        firebase.database().ref("Map/" + this.MapName).once("value", data => {
                             firebase.database().ref("Room/" + room_id + "/map/").set(data.val());
                         })
+                        firebase.database().ref("Room/" + room_id + "/state/").set("battle");
                     }
-                }).then(() => {
-                    firebase.database().ref("Room/" + room_id + "/state/").set("battle");
-                });
+                })
+                
             }
 
             firebase.database().ref("Room/" + room_id + "/state/").on("value", (data: any) => {
@@ -86,5 +100,3 @@ export default class NewClass extends cc.Component {
         })
     }
 }
-
-// The room stored in firebase won't be removed after player just close the window.

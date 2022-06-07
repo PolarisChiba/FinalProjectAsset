@@ -22,11 +22,13 @@ export default class NewClass extends cc.Component {
     @property(cc.Button)
     Back: cc.Button = null;
 
+    /*
     @property(cc.Sprite)
     Aim: cc.Sprite = null;
 
     @property(cc.Sprite)
     Break: cc.Sprite = null;
+    */
 
     // LIFE-CYCLE CALLBACKS:
 
@@ -48,6 +50,7 @@ export default class NewClass extends cc.Component {
             else
                 firebase.database().ref("Account/" + user.uid + "/lose").set(1 + data.val().lose);
         })
+        /*
         this.scheduleOnce(() => {
             this.Aim.node.runAction(cc.moveTo(1, 0, 0));
         }, 1);
@@ -73,6 +76,7 @@ export default class NewClass extends cc.Component {
                 cc.director.loadScene("Room");
             }, 4);
         }, this);
+        */
     }
 
     // update (dt) {}
