@@ -58,6 +58,7 @@ export default class NewClass extends cc.Component {
             this.Aim.node.opacity = 0;
             this.Break.node.opacity = 255;
         }, 2.3);
+        */
         this.scheduleOnce(() => {
             this.Email.node.runAction(cc.fadeIn(1));
         }, 3);
@@ -76,7 +77,6 @@ export default class NewClass extends cc.Component {
                 cc.director.loadScene("Room");
             }, 4);
         }, this);
-        */
     }
 
     // update (dt) {}

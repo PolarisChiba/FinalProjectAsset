@@ -305,7 +305,7 @@ export default class NewClass extends cc.Component {
                     res.equip = Math.min(res.equip, this.ServerMap[res.I][res.J].equip);
                     res.food = Math.min(res.food, this.ServerMap[res.I][res.J].food);
 
-                    let damage = (res.equip * EquipToSoldier >= res.soldier ? Math.round(res.soldier / EquipSoldierDamage) : Math.round((res.soldier - res.equip * EquipToSoldier) / NotEquipSoldierDamage) + res.equip * EquipToSoldier * EquipSoldierDamage);
+                    let damage = (res.equip * EquipToSoldier >= res.soldier ? Math.round(res.soldier / EquipSoldierDamage) : Math.round((res.soldier - res.equip * EquipToSoldier) / NotEquipSoldierDamage) + res.equip * EquipToSoldier / EquipSoldierDamage);
                     damage = Math.round(damage * (1.0 - CityDefend * this.ServerMap[res.destI][res.destJ].city) * (1.0 - IndustryDefend * this.ServerMap[res.destI][res.destJ].industry));
                     if (res.soldier > res.food)
                         damage = Math.round(ArmyDamageWithoutFood * damage + (1 - ArmyDamageWithoutFood) * damage * res.food / res.soldier);
@@ -316,7 +316,7 @@ export default class NewClass extends cc.Component {
                     if (this.ServerMap[res.I][res.J].fort)
                         damage = Math.round(damage * FortAttack);
                     
-                    let counterdamage = (this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier >= this.ServerMap[res.destI][res.destJ].soldier ? Math.round(this.ServerMap[res.destI][res.destJ].soldier / EquipSoldierDamage) : Math.round((this.ServerMap[res.destI][res.destJ].soldier - this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier) / NotEquipSoldierDamage) + this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier * EquipSoldierDamage);
+                    let counterdamage = (this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier >= this.ServerMap[res.destI][res.destJ].soldier ? Math.round(this.ServerMap[res.destI][res.destJ].soldier / EquipSoldierDamage) : Math.round((this.ServerMap[res.destI][res.destJ].soldier - this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier) / NotEquipSoldierDamage) + this.ServerMap[res.destI][res.destJ].equip * EquipToSoldier / EquipSoldierDamage);
                     if (this.ServerMap[res.destI][res.destJ].fort)
                         counterdamage = Math.round(counterdamage * FortAttack);
                     if (this.ServerMap[res.destI][res.destJ].soldier > this.ServerMap[res.destI][res.destJ].food) {
