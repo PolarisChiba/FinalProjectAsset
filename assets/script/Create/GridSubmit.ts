@@ -118,5 +118,6 @@ export default class NewClass extends cc.Component {
         this.Missile.isChecked = false;
         this.Trench.isChecked = false;
         this.Nature.isChecked = false;
+        this.Fort.isChecked = false;
     }
 }
