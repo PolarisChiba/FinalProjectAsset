@@ -473,17 +473,28 @@
     "user": null,
     "room_id": null,
     "GridPrefab": {
-      "__uuid__": "f0e70c7a-498c-4081-88f1-3fa50ea32699"
+      "__uuid__": "20ad1238-846d-4024-8d91-035727fb5475"
     },
     "LinePrefab": {
       "__uuid__": "508a827b-ef8d-49cd-8bef-cd0e58cbee5e"
     },
+    "CityLv0": null,
+    "CityLv1": null,
+    "CityLv2": null,
+    "CityLv3": null,
+    "CityLv4": null,
+    "Soldier": null,
+    "Equip": null,
+    "Food": null,
     "MapGrid": null,
     "NumberTop": null,
     "NumberCenter": null,
     "NumberBottom": null,
     "Fog": null,
+    "FogPic": null,
     "Identity": null,
+    "SelfFloor": null,
+    "EnemyFloor": null,
     "Camera": {
       "__id__": 5
     },
