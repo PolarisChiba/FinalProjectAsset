@@ -482,12 +482,6 @@ export default class NewClass extends cc.Component {
                     this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
                     this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
 
-                    /*if (this.ShowState == "Army") {
-                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                    }*/
-
                     if (this.ShowState == "Army") {
                         this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
                         this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -518,12 +512,6 @@ export default class NewClass extends cc.Component {
                     this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
                     this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
                     this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
-
-                    /*if (this.ShowState == "Army") {
-                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                    }*/
 
                     if (this.ShowState == "Army") {
                         this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
@@ -556,12 +544,6 @@ export default class NewClass extends cc.Component {
                     this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
                     this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
 
-                    /*if (this.ShowState == "Army") {
-                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                    }*/
-                    
                     if (this.ShowState == "Army") {
                         this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
                         this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -592,12 +574,6 @@ export default class NewClass extends cc.Component {
                     this.GameInfo.map[this.GridX][this.GridY].soldier = this.GameInfo.map[this.GridX][this.GridY].soldier - SoldierMoved;
                     this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
                     this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
-
-                    /*if (this.ShowState == "Army") {
-                        this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                        this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                        this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                    }*/
 
                     if (this.ShowState == "Army") {
                         this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
@@ -743,11 +719,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             upgrade: "city"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -769,11 +740,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             upgrade: "industry"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -795,11 +761,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             upgrade: "farm"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string =  this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -836,11 +797,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             construction: "Airport"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -857,11 +813,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             construction: "Missile"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -878,11 +829,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             construction: "Trench"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -899,11 +845,6 @@ export default class NewClass extends cc.Component {
             authority: this.GameInfo.authority[this.user.uid],
             construction: "Fort"
         });
-        /*if (this.ShowState == "Army") {
-            this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-            this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-            this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-        }*/
         if (this.ShowState == "Army") {
             this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
             this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -924,11 +865,6 @@ export default class NewClass extends cc.Component {
                 this.GameInfo.map[this.GridX][this.GridY].equip = this.GameInfo.map[this.GridX][this.GridY].equip - EquipMoved;
                 this.GameInfo.map[this.GridX][this.GridY].food = this.GameInfo.map[this.GridX][this.GridY].food - FoodMoved;
 
-                /*if (this.ShowState == "Army") {
-                    this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                    this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                    this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                }*/
                 if (this.ShowState == "Army") {
                     this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
                     this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -959,11 +895,6 @@ export default class NewClass extends cc.Component {
                 this.GameInfo.map[this.GridX][this.GridY].equip -= MissileLaunchCost;
                 this.hasMissileLaunched[this.GridX][this.GridY] = true;
 
-                /*if (this.ShowState == "Army") {
-                    this.NumberTop[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].soldier == 0 ? "" : "S:" + this.GameInfo.map[this.GridX][this.GridY].soldier);
-                    this.NumberCenter[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].equip == 0 ? "" : "E:" + this.GameInfo.map[this.GridX][this.GridY].equip);
-                    this.NumberBottom[this.GridX][this.GridY].string = (this.GameInfo.map[this.GridX][this.GridY].food == 0 ? "" : "F:" + this.GameInfo.map[this.GridX][this.GridY].food);
-                }*/
                 if (this.ShowState == "Army") {
                     this.NumberTop[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].soldier;
                     this.NumberCenter[this.GridX][this.GridY].string = this.GameInfo.map[this.GridX][this.GridY].equip;
@@ -1006,17 +937,9 @@ export default class NewClass extends cc.Component {
             }
         }
         
-        if (ok) {
-            this.Fog[this.GridX][this.GridY].opacity = 0;
-            this.FogPic[this.GridX][this.GridY].opacity = 0;
-        } else {
-            this.Fog[this.GridX][this.GridY].opacity = 255;
-            this.FogPic[this.GridX][this.GridY].opacity = 255;
-        }
-
         if (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
-            this.Fog[i][j].opacity = 150;
-            this.FogPic[i][j].opacity = 0;
+            /*this.Fog[i][j].opacity = 150;
+            this.FogPic[i][j].opacity = 0;*/
 
             this.SoldierNumber.string = "Soldier: " + this.GameInfo.map[i][j].soldier + "/" + this.GameInfo.map[i][j].soldier;
             this.EquipNumber.string = "Equip: " + this.GameInfo.map[i][j].equip + "/" + this.GameInfo.map[i][j].equip;
@@ -1138,15 +1061,12 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Army";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                /*this.NumberTop[i][j].string = (this.GameInfo.map[i][j].soldier == 0 ? "" : "S:" + this.GameInfo.map[i][j].soldier);
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].equip == 0 ? "" : "E:" + this.GameInfo.map[i][j].equip);
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].food == 0 ? "" : "F:" + this.GameInfo.map[i][j].food);*/
-                this.NumberTop[i][j].string = this.GameInfo.map[i][j].soldier;
-                this.NumberCenter[i][j].string = this.GameInfo.map[i][j].equip;
-                this.NumberBottom[i][j].string = this.GameInfo.map[i][j].food;
-                this.Soldier[i][j].opacity = 255;
-                this.Equip[i][j].opacity = 255;
-                this.Food[i][j].opacity = 255;
+                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].soldier : "");
+                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].equip : "??");
+                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].food : "");
+                this.Soldier[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
+                this.Equip[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
+                this.Food[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
             }
         }
         this.ShowVisible();
@@ -1155,9 +1075,9 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Level";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].city == 0 ? "" : "C:" + this.GameInfo.map[i][j].city);
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].industry == 0 ? "" : "I:" + this.GameInfo.map[i][j].industry);
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].farm == 0 ? "" : "F:" + this.GameInfo.map[i][j].farm);
+                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "C: " + this.GameInfo.map[i][j].city : "");
+                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "I: " + this.GameInfo.map[i][j].industry : "??");
+                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "F: " + this.GameInfo.map[i][j].food : "");
                 this.Soldier[i][j].opacity = 0;
                 this.Equip[i][j].opacity = 0;
                 this.Food[i][j].opacity = 0;
@@ -1180,7 +1100,7 @@ export default class NewClass extends cc.Component {
                     }
                 }
 
-                if (ok && this.ShowState == "Name") {
+                if (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
                     this.Fog[i][j].opacity = 0;
                     this.FogPic[i][j].opacity = 0;
                     if (this.GameInfo.map[i][j].city == "0" && this.GameInfo.map[i][j].soldier > 0) {
@@ -1236,12 +1156,13 @@ export default class NewClass extends cc.Component {
                     this.CityLv2[i][j].opacity = 0;
                     this.CityLv3[i][j].opacity = 0;
                     this.CityLv4[i][j].opacity = 0;
+                    
                 }
 
-                if (i == this.GridX && j == this.GridY && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
+                /*if (i == this.GridX && j == this.GridY && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
                     this.Fog[i][j].opacity = 150;
                     this.FogPic[i][j].opacity = 0;
-                }
+                }*/
 
                 // this.Identity[i][j].color = ColorAuthority[this.GameInfo.map[i][j].authority];
             
