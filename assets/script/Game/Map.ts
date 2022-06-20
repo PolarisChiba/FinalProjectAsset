@@ -1021,7 +1021,7 @@ export default class NewClass extends cc.Component {
             this.EquipSlider.progress = ratio;
             this.FoodSlider.progress = ratio;
         }
-        this.SlideNumberUpdatingAll();
+        //this.SlideNumberUpdatingAll();
     }
     SlideNumberUpdatingAll() {
         this.SoliderNumberSlide();
