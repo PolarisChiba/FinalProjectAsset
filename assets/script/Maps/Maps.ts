@@ -746,8 +746,14 @@ export default class NewClass extends cc.Component {
 
                 // this.Identity[i][j].color = ColorAuthority[this.GameInfo[i][j].authority];
             
-                {
+                if (this.GameInfo[i][j].authority == 0) {
                     this.SelfFloor[i][j].opacity = 255;
+                    this.EnemyFloor[i][j].opacity = 0;
+                } else if (this.GameInfo[i][j].authority == 1) {
+                    this.SelfFloor[i][j].opacity = 0;
+                    this.EnemyFloor[i][j].opacity = 255;
+                } else {
+                    this.SelfFloor[i][j].opacity = 0;
                     this.EnemyFloor[i][j].opacity = 0;
                 }
             }
