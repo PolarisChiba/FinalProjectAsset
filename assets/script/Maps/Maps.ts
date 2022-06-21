@@ -47,6 +47,8 @@ const SoldierAway = 0.6;
 const ColorAuthority = [new cc.Color(255, 0, 0), new cc.Color(0, 255, 0), new cc.Color(0, 0, 255)]
 const BadgeFadeTime = 3;
 
+var MapName;
+
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -198,9 +200,6 @@ export default class NewClass extends cc.Component {
     @property(cc.Toggle)
     NatureToggle: cc.Toggle = null;
 
-    @property(cc.EditBox)
-    MapName: cc.EditBox = null;
-
     @property(cc.Label)
     GameTurn: cc.Label = null;
 
@@ -219,8 +218,17 @@ export default class NewClass extends cc.Component {
 
         this.user = firebase.auth().currentUser;
 
-        firebase.database().ref("Map/Rwar").once("value", data => {
+        firebase.database().ref("loadmaps/").once("value", data => {
+            if(data.val() == null){
+                cc.director.loadScene("Room");
+            }else{
+                MapName = data.val()['map'];
+                console.log('MapName:', MapName);
+            }
+        }).then(() => {
+        firebase.database().ref("Map/" + MapName).once("value", data => {
             this.GameInfo = data.val();
+            console.log("Game", this.GameInfo);
             this.scheduleOnce(() => {
                 this.AdjustSize();
                 this.InitGridArrays();
@@ -247,6 +255,7 @@ export default class NewClass extends cc.Component {
                 firebase.database().ref("Room/" + this.room_id).remove();
                 cc.director.loadScene("Room");
             }, this);
+        })
         })
     }
 
@@ -584,7 +593,7 @@ export default class NewClass extends cc.Component {
         }
     }
     ShowGridInformation(i: number, j: number, ratio: any = null) {
-        this.GameTurn.string = 'Rwar: (' + i + ', ' + j + ')';
+        this.GameTurn.string = MapName + ': (' + i + ', ' + j + ')';
         this.SoldierNumber.string = "Soldier: " + this.GameInfo[i][j].soldier + "/" + this.GameInfo[i][j].soldier;
             this.EquipNumber.string = "Equip: " + this.GameInfo[i][j].equip + "/" + this.GameInfo[i][j].equip;
             this.FoodNumber.string = "Food: " + this.GameInfo[i][j].food + "/" + this.GameInfo[i][j].food;
@@ -655,12 +664,12 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Army";
         for (let i = 0; i < this.GameInfo.height; i ++) {
             for (let j = 0; j < this.GameInfo.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo[i][j].soldier : "");
-                this.NumberCenter[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo[i][j].equip : "??");
-                this.NumberBottom[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo[i][j].food : "");
-                this.Soldier[i][j].opacity = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
-                this.Equip[i][j].opacity = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
-                this.Food[i][j].opacity = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
+                this.NumberTop[i][j].string = this.GameInfo[i][j].soldier;
+                this.NumberCenter[i][j].string = this.GameInfo[i][j].equip;
+                this.NumberBottom[i][j].string =this.GameInfo[i][j].food;
+                this.Soldier[i][j].opacity = 255;
+                this.Equip[i][j].opacity = 255;
+                this.Food[i][j].opacity = 255;
             }
         }
         this.ShowVisible();
@@ -669,9 +678,9 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Level";
         for (let i = 0; i < this.GameInfo.height; i ++) {
             for (let j = 0; j < this.GameInfo.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? "C: " + this.GameInfo[i][j].city : "");
-                this.NumberCenter[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? "I: " + this.GameInfo[i][j].industry : "??");
-                this.NumberBottom[i][j].string = (this.GameInfo[i][j].authority == this.GameInfo.authority[this.user.uid] ? "F: " + this.GameInfo[i][j].food : "");
+                this.NumberTop[i][j].string = "C: " + this.GameInfo[i][j].city;
+                this.NumberCenter[i][j].string = "I: " + this.GameInfo[i][j].industry;
+                this.NumberBottom[i][j].string = "F: " + this.GameInfo[i][j].food;
                 this.Soldier[i][j].opacity = 0;
                 this.Equip[i][j].opacity = 0;
                 this.Food[i][j].opacity = 0;
