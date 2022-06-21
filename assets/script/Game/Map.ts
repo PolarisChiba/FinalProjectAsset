@@ -1021,7 +1021,8 @@ export default class NewClass extends cc.Component {
             this.EquipSlider.progress = ratio;
             this.FoodSlider.progress = ratio;
         }
-        //this.SlideNumberUpdatingAll();
+        if (ok)
+            this.SlideNumberUpdatingAll();
     }
     SlideNumberUpdatingAll() {
         this.SoliderNumberSlide();
@@ -1047,8 +1048,16 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Name";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
+                let ok = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]);
+                for (let k = 0; k < 4; k ++ ) {
+                    let tx = i + this.dx[k], ty = j + this.dy[k];
+                    if (0 <= tx && tx < this.GameInfo.map.height && 0 <= ty && ty < this.GameInfo.map.width) {
+                        ok ||= (this.GameInfo.map[tx][ty].authority == this.GameInfo.authority[this.user.uid]);
+                    }
+                }
+
                 this.NumberTop[i][j].string = "";
-                this.NumberCenter[i][j].string = this.GameInfo.map[i][j].name;
+                this.NumberCenter[i][j].string = (ok ? this.GameInfo.map[i][j].name : "");
                 this.NumberBottom[i][j].string = "";
                 this.Soldier[i][j].opacity = 0;
                 this.Equip[i][j].opacity = 0;
@@ -1061,12 +1070,20 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Army";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].soldier : "");
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].equip : "??");
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? this.GameInfo.map[i][j].food : "");
-                this.Soldier[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
-                this.Equip[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
-                this.Food[i][j].opacity = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? 255 : 0);
+                let ok = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]);
+                for (let k = 0; k < 4; k ++ ) {
+                    let tx = i + this.dx[k], ty = j + this.dy[k];
+                    if (0 <= tx && tx < this.GameInfo.map.height && 0 <= ty && ty < this.GameInfo.map.width) {
+                        ok ||= (this.GameInfo.map[tx][ty].authority == this.GameInfo.authority[this.user.uid]);
+                    }
+                }
+
+                this.NumberTop[i][j].string = (ok ? this.GameInfo.map[i][j].soldier : "");
+                this.NumberCenter[i][j].string = (ok ? this.GameInfo.map[i][j].equip : "??");
+                this.NumberBottom[i][j].string = (ok ? this.GameInfo.map[i][j].food : "");
+                this.Soldier[i][j].opacity = (ok ? 255 : 0);
+                this.Equip[i][j].opacity = (ok ? 255 : 0);
+                this.Food[i][j].opacity = (ok ? 255 : 0);
             }
         }
         this.ShowVisible();
@@ -1075,9 +1092,17 @@ export default class NewClass extends cc.Component {
         this.ShowState = "Level";
         for (let i = 0; i < this.GameInfo.map.height; i ++) {
             for (let j = 0; j < this.GameInfo.map.width; j ++ ) {
-                this.NumberTop[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "C: " + this.GameInfo.map[i][j].city : "");
-                this.NumberCenter[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "I: " + this.GameInfo.map[i][j].industry : "??");
-                this.NumberBottom[i][j].string = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid] ? "F: " + this.GameInfo.map[i][j].food : "");
+                let ok = (this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]);
+                for (let k = 0; k < 4; k ++ ) {
+                    let tx = i + this.dx[k], ty = j + this.dy[k];
+                    if (0 <= tx && tx < this.GameInfo.map.height && 0 <= ty && ty < this.GameInfo.map.width) {
+                        ok ||= (this.GameInfo.map[tx][ty].authority == this.GameInfo.authority[this.user.uid]);
+                    }
+                }
+
+                this.NumberTop[i][j].string = (ok ? "City: Lv" + this.GameInfo.map[i][j].city : "");
+                this.NumberCenter[i][j].string = (ok ? "Ind.: Lv" + this.GameInfo.map[i][j].industry : "??");
+                this.NumberBottom[i][j].string = (ok ? "Farm: Lv" + this.GameInfo.map[i][j].farm : "");
                 this.Soldier[i][j].opacity = 0;
                 this.Equip[i][j].opacity = 0;
                 this.Food[i][j].opacity = 0;
@@ -1159,12 +1184,7 @@ export default class NewClass extends cc.Component {
                     
                 }
 
-                /*if (i == this.GridX && j == this.GridY && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
-                    this.Fog[i][j].opacity = 150;
-                    this.FogPic[i][j].opacity = 0;
-                }*/
-
-                // this.Identity[i][j].color = ColorAuthority[this.GameInfo.map[i][j].authority];
+                this.Identity[i][j].color = ColorAuthority[this.GameInfo.map[i][j].authority];
             
                 if (ok && this.GameInfo.map[i][j].authority == this.GameInfo.authority[this.user.uid]) {
                     this.SelfFloor[i][j].opacity = 255;
