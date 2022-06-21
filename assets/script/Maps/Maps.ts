@@ -744,7 +744,7 @@ export default class NewClass extends cc.Component {
                     this.FogPic[i][j].opacity = 0;
                 }*/
 
-                // this.Identity[i][j].color = ColorAuthority[this.GameInfo[i][j].authority];
+                this.Identity[i][j].color = ColorAuthority[this.GameInfo[i][j].authority];
             
                 if (this.GameInfo[i][j].authority == 0) {
                     this.SelfFloor[i][j].opacity = 255;
