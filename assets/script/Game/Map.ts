@@ -44,7 +44,7 @@ const FarmFoodIncrease = 2000;
 const SoldierConsumeFood = 10;
 const SoldierAway = 0.6;
 
-const ColorAuthority = [new cc.Color(255, 0, 0), new cc.Color(0, 255, 0), new cc.Color(0, 0, 255)]
+const ColorAuthority = [new cc.Color(255, 100, 100), new cc.Color(100, 255, 100), new cc.Color(100, 100, 255)]
 const BadgeFadeTime = 3;
 
 
