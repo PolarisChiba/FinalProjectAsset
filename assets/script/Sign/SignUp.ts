@@ -10,11 +10,17 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class NewClass extends cc.Component {
 
-    @property(cc.EditBox)
-    email: cc.EditBox = null;
+    @property(cc.Label)
+    email: cc.Label = null;
+
+    @property(cc.Label)
+    password: cc.Label = null;
 
     @property(cc.EditBox)
-    password: cc.EditBox = null;
+    Emailbox: cc.EditBox = null;
+
+    @property(cc.EditBox)
+    Passwordbox: cc.EditBox = null;
 
     @property(cc.Label)
     error: cc.Label = null;
@@ -44,6 +50,8 @@ export default class NewClass extends cc.Component {
             this.error.string = e.message;
             this.email.string = "";
             this.password.string = "";
+            this.Emailbox.string = "";
+            this.Passwordbox.string = "";
         });
     }
 }

@@ -10,11 +10,17 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class NewClass extends cc.Component {
 
+    @property(cc.Label)
+    email: cc.Label = null;
+
+    @property(cc.Label)
+    password: cc.Label = null;
+    
     @property(cc.EditBox)
-    email: cc.EditBox = null;
+    Emailbox: cc.EditBox = null;
 
     @property(cc.EditBox)
-    password: cc.EditBox = null;
+    Passwordbox: cc.EditBox = null;
 
     @property(cc.Label)
     error: cc.Label = null;
@@ -38,6 +44,8 @@ export default class NewClass extends cc.Component {
     // update (dt : number) {}
 
     SignIn (event: any) {
+        console.log(this.email.string);
+        console.log(this.password.string);
         firebase.auth().signInWithEmailAndPassword(this.email.string, this.password.string)
         .then((e : any) => {
             cc.director.loadScene("Room");
@@ -46,6 +54,8 @@ export default class NewClass extends cc.Component {
             this.error.string = e.message;
             this.email.string = "";
             this.password.string = "";
+            this.Emailbox.string = "";
+            this.Passwordbox.string = "";
         });
     }
 }
