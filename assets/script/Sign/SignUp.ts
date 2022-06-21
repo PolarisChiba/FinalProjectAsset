@@ -10,11 +10,11 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class NewClass extends cc.Component {
 
-    @property(cc.Label)
-    email: cc.Label = null;
+    @property(cc.EditBox)
+    email: cc.EditBox = null;
 
-    @property(cc.Label)
-    password: cc.Label = null;
+    @property(cc.EditBox)
+    password: cc.EditBox = null;
 
     @property(cc.Label)
     error: cc.Label = null;
