@@ -198,24 +198,6 @@ export default class NewClass extends cc.Component {
     @property(cc.Toggle)
     NatureToggle: cc.Toggle = null;
 
-    @property(cc.Button)
-    AirportMoveBtn: cc.Button = null;
-
-    @property(cc.Button)
-    MissileLaunchBtn: cc.Button = null;
-
-    @property(cc.Label)
-    AirportPrice: cc.Label = null;
-
-    @property(cc.Label)
-    MissilePrice: cc.Label = null;
-
-    @property(cc.Label)
-    TrenchPrice: cc.Label = null;
-
-    @property(cc.Label)
-    FortPrice: cc.Label = null;
-
     @property(cc.EditBox)
     MapName: cc.EditBox = null;
 
@@ -252,7 +234,7 @@ export default class NewClass extends cc.Component {
             this.NameToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowName, this);
             this.ArmyToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowArmy, this);
             this.LevelToggle.on(cc.Node.EventType.MOUSE_DOWN, this.ShowLevel, this);
-            this.AirportToggle.node.on("toggle", this.AirportToggleCheck, this);
+            /*this.AirportToggle.node.on("toggle", this.AirportToggleCheck, this);
             this.MissileToggle.node.on("toggle", this.MissileToggleCheck, this);
             this.TrenchToggle.node.on("toggle", this.TrenchToggleCheck, this);
             this.FortToggle.node.on("toggle", this.FortToggleCheck, this);
@@ -261,7 +243,7 @@ export default class NewClass extends cc.Component {
             this.FarmUpgradeBtn.node.on("click", this.FarmLevelUpgradeClick, this);
             this.AirportMoveBtn.node.on("click", this.AirportMoveClick, this);
             this.MissileLaunchBtn.node.on("click", this.MissileLaunchClick, this);
-            this.Back.node.on("click", () => {
+            */this.Back.node.on("click", () => {
                 firebase.database().ref("Room/" + this.room_id).remove();
                 cc.director.loadScene("Room");
             }, this);
@@ -382,7 +364,7 @@ export default class NewClass extends cc.Component {
         // 只要不是在起始位置，點擊時，判定位置會有問題
     }
 
-    CityLevelUpgradeClick() {
+    /*CityLevelUpgradeClick() {
         this.GameInfo[this.GridX][this.GridY].food -= (this.GameInfo[this.GridX][this.GridY].city + 1) * CityUpgradeCost;
         this.GameInfo[this.GridX][this.GridY].city += 1;
         this.ShowGridInformation(this.GridX, this.GridY);
@@ -586,7 +568,7 @@ export default class NewClass extends cc.Component {
         }
         this.isMissileLaunching = false;
         this.ShowGridInformation(this.GridX, this.GridY);
-    }
+    }*/
 
     @property
     GridX: number = null;
@@ -602,7 +584,7 @@ export default class NewClass extends cc.Component {
         }
     }
     ShowGridInformation(i: number, j: number, ratio: any = null) {
-        this.GameTurn.string = '(' + i + ', ' + j + ')';
+        this.GameTurn.string = 'Rwar: (' + i + ', ' + j + ')';
         this.SoldierNumber.string = "Soldier: " + this.GameInfo[i][j].soldier + "/" + this.GameInfo[i][j].soldier;
             this.EquipNumber.string = "Equip: " + this.GameInfo[i][j].equip + "/" + this.GameInfo[i][j].equip;
             this.FoodNumber.string = "Food: " + this.GameInfo[i][j].food + "/" + this.GameInfo[i][j].food;
@@ -625,15 +607,15 @@ export default class NewClass extends cc.Component {
             this.FortToggle.isChecked = (this.GameInfo[i][j].fort == true);
             this.NatureToggle.isChecked = (this.GameInfo[i][j].nature == true);
 
-            this.AirportMoveBtn.interactable = (this.isAirportMoving == false);
-            this.AirportMoveBtn.node.active = (this.AirportToggle.isChecked && this.GameInfo[i][j].equip >= AirportMoveCost && this.isMissileLaunching == false);
-            this.MissileLaunchBtn.interactable = (this.isMissileLaunching == false);
-            this.MissileLaunchBtn.node.active = (this.MissileToggle.isChecked && this.GameInfo[i][j].equip >= MissileLaunchCost && this.isAirportMoving == false && this.hasMissileLaunched[i][j] == false);
+            //this.AirportMoveBtn.interactable = (this.isAirportMoving == false);
+            //this.AirportMoveBtn.node.active = (this.AirportToggle.isChecked && this.GameInfo[i][j].equip >= AirportMoveCost && this.isMissileLaunching == false);
+            //this.MissileLaunchBtn.interactable = (this.isMissileLaunching == false);
+            //this.MissileLaunchBtn.node.active = (this.MissileToggle.isChecked && this.GameInfo[i][j].equip >= MissileLaunchCost && this.isAirportMoving == false && this.hasMissileLaunched[i][j] == false);
             
-            this.AirportPrice.node.active = !this.AirportToggle.isChecked;
-            this.MissilePrice.node.active = !this.MissileToggle.isChecked;
-            this.TrenchPrice.node.active = !this.TrenchToggle.isChecked;
-            this.FortPrice.node.active = !this.FortToggle.isChecked;
+            //this.AirportPrice.node.active = !this.AirportToggle.isChecked;
+            //this.MissilePrice.node.active = !this.MissileToggle.isChecked;
+            //this.TrenchPrice.node.active = !this.TrenchToggle.isChecked;
+            //this.FortPrice.node.active = !this.FortToggle.isChecked;
 
             this.AirportToggle.interactable = !(this.GameInfo[i][j].airport == true || this.GameInfo[i][j].food < AirportConstructCost);
             this.MissileToggle.interactable = !(this.GameInfo[i][j].missile == true || this.GameInfo[i][j].food < MissileConstructCost);
